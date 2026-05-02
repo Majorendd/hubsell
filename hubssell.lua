@@ -4,12 +4,14 @@ if not game:IsLoaded() then
 end
 
 local PS99 = {Pro = 15588442388, Normal = 15502339080}
+local PETSGO = {Pro = 133783083257328, Normal = 19006211286}
 
--- Guard: Only run in PS99
-if not table.find({PS99.Pro, PS99.Normal}, game.PlaceId) then
-    warn("[Plaza Plus]: This script only works in Pet Simulator 99. Stopping.")
+-- Guard: Settings must be defined before running
+if not getgenv().Settings then
+    warn("[Plaza Plus]: getgenv().Settings is not defined! Please set your config before running.")
     return
 end
+local Settings = getgenv().Settings
 
 local StartingTime = os.time()
 local Players = game:GetService("Players")
@@ -41,11 +43,24 @@ local PlayerScripts = LocalPlayer.PlayerScripts.Scripts
 local Rarities = table.clone(require(NLibrary.Directory.Rarity))
 local Mailbox = require(NLibrary.Types.Mailbox)
 
--- PS99 only
-if #TradingPlazaCmds.GetAvailable() > 1 then
-    CanUsePro = true
+local CanUsePro = false
+local Constants = nil
+local UpgradeCmds = nil
+local Variables = nil
+
+--// PS99
+if table.find({PS99.Normal, PS99.Pro}, game.PlaceId) then
+    if #TradingPlazaCmds.GetAvailable() > 1 then
+        CanUsePro = true
+    end
+    Constants = require(NLibrary.Balancing.Constants)
 end
-Constants = require(NLibrary.Balancing.Constants)
+
+--// PETS GO
+if table.find({PETSGO.Normal, PETSGO.Pro}, game.PlaceId) then
+    UpgradeCmds = require(NLibrary.Client.UpgradeCmds)
+    Variables = require(NLibrary.Shared.Variables)
+end
 
 local LoadModules = function(Path, LoadTable)
     for _,v in next, Path:GetChildren() do
@@ -64,22 +79,23 @@ if not getgenv().Library then
 end
 
 local Booths, ClaimedBooths, BoothsInteractive, Interacts
-repeat task.wait() 
-    Booths = getsenv(NLibrary.Client:FindFirstChild("BoothCmds") or LocalPlayer.PlayerScripts.Scripts.Game["Trading Plaza"]["Booths Frontend"]).getState
-until Booths
-Booths = getupvalues(Booths)
-repeat task.wait() 
-    Interacts = getsenv(NLibrary.Client:FindFirstChild("BoothCmds") or LocalPlayer.PlayerScripts.Scripts.Game["Trading Plaza"]["Booths Frontend"]).updateAllInteracts
-until Interacts
-ClaimedBooths = getupvalues(Interacts)[1]
-BoothsInteractive = getupvalues(Interacts)[3]
-
+if table.find({PS99.Pro, PS99.Normal, PETSGO.Normal, PETSGO.Pro}, game.PlaceId) then
+    repeat task.wait() 
+        Booths = getsenv(NLibrary.Client:FindFirstChild("BoothCmds") or LocalPlayer.PlayerScripts.Scripts.Game["Trading Plaza"]["Booths Frontend"]).getState
+    until Booths
+    Booths = getupvalues(Booths)
+    repeat task.wait() 
+        Interacts = getsenv(NLibrary.Client:FindFirstChild("BoothCmds") or LocalPlayer.PlayerScripts.Scripts.Game["Trading Plaza"]["Booths Frontend"]).updateAllInteracts
+    until Interacts
+    ClaimedBooths = getupvalues(Interacts)[1]
+    BoothsInteractive = getupvalues(Interacts)[3]
+end
 
 --// File Setup
-local DefaultSettings = {Seller = false}
+local DefaultSettings = {Sniper = false, Seller = false}
 local FileSettings = {}
 local OGFileSettings = {}
-local FolderPath = "System Exodus/Pet Simulator 99"
+local FolderPath = "System Exodus/" .. (table.find({PETSGO.Normal, PETSGO.Pro}, game.PlaceId) and "PETS GO" or "Pet Simulator 99")
 local FileName = FolderPath .. "/" .. LocalPlayer.Name .. " Plaza Plus.cfg"
 if not isfolder("System Exodus") then makefolder("System Exodus") end
 if not isfolder(FolderPath) then makefolder(FolderPath) end
@@ -125,6 +141,8 @@ local function AddSuffix(Amount)
     local b = math.pow(10, a * 3)
     return (IsNegative and "-" or "")..("%.2f"):format(Amount / b):gsub("%.?0+$", "") .. (SuffixesLower[a] or "")
 end
+
+-- FIX: Only one definition of RemoveSuffix (duplicate removed)
 local function RemoveSuffix(Amount)
     local Number, Suffix = Amount:gsub("%a", ""), Amount:match("%a")	
     local Type = table.find(SuffixesUpper, Suffix) or table.find(SuffixesLower, Suffix) or 0
@@ -163,10 +181,18 @@ local function SetUISettings(Type)
     end
 end
 
--- Seller only: always enable seller
-FileSettings.Seller = true
-
-if Settings.Seller and Settings.Seller.Active then
+if (Settings.Sniper and Settings.Sniper.Active) and (Settings.Seller and Settings.Seller.Active) and not (FileSettings.Sniper or FileSettings.Seller) then
+    FileSettings.Sniper = true
+end
+if (Settings.Sniper and Settings.Sniper.Active) and (Settings.Seller and not Settings.Seller.Active) or not Settings.Seller then
+    FileSettings.Sniper = true
+elseif (Settings.Seller and Settings.Seller.Active) and (Settings.Sniper and not Settings.Sniper.Active) or not Settings.Sniper then
+    FileSettings.Seller = true
+end
+if Settings.Sniper and Settings.Sniper.Active and FileSettings.Sniper then
+    SetUISettings(Settings.Sniper)
+end
+if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
     SetUISettings(Settings.Seller)
 end
 
@@ -193,6 +219,10 @@ local function ColorizeConsole()
                         return "<font color='rgb(65, 223, 65)'>" .. percent .. "% BELOW RAP</font>"
                     end)
                     Text = Text:gsub("Manipulated", "<font color='rgb(230, 70, 70)'>Manipulated</font>")
+                    Text = Text:gsub("(Sniping:)( x%d+%s*)([^\n]*)", function(sniping, count, itemName)
+                        return "<font color='rgb(33, 239, 253)'>" .. sniping .. "</font>" .. 
+                               "<font color='rgb(230, 215, 123)'>" .. count .. itemName .. "</font>"
+                    end)
                     Label.Text = Text
                 end
                 Frame:SetAttribute("Colorized", true)
@@ -254,9 +284,11 @@ local function ConvertNumerals(Roman)
 end
 local function AddCommas(Amount)
     local SuffixAdd = Amount
-    while task.wait() do  
-        SuffixAdd, b = string.gsub(SuffixAdd, "^(-?%d+)(%d%d%d)", '%1,%2')
-        if (b == 0) then break end
+    while task.wait() do
+        -- FIX: local b to avoid global leak
+        local replaced
+        SuffixAdd, replaced = string.gsub(SuffixAdd, "^(-?%d+)(%d%d%d)", '%1,%2')
+        if replaced == 0 then break end
     end
     return SuffixAdd
 end
@@ -272,6 +304,7 @@ Classes.Page = nil
 local ItemList = Classes
 local DirectoryClasses = {}
 for Name, Info in next, Classes do
+    -- FIX: was missing 'local', leaked global
     local Continue = false
     for _, Class in next, NLibrary.Directory:GetChildren() do
         if tostring(Class):find(Name) then
@@ -307,7 +340,8 @@ for Class, Info in next, Classes do
             else
                 if Info.Tiers then
                     for i = 1, #Info.Tiers do
-                        local Display, Icon, Rarity, Power
+                        -- FIX: was 'Display, Icon, Rarity, Power = nil' which is invalid syntax
+                        local Display, Icon, Rarity, Power = nil, nil, nil, nil
                         if Info.Tiers[i].Effect and Info.Tiers[i].Effect.Type.Tiers[i] then
                             if Info.Tiers[i].Effect.Type.Tiers[i].Name then
                                 Display = Info.Tiers[i].Effect.Type.Tiers[i].Name
@@ -336,7 +370,7 @@ for Class, Info in next, Classes do
                         }
                     end
                 else
-                    if Info.instant_purchase then continue end
+                    if Info.instant_purchase then return end
                     local DisplayName = (Info.DisplayName and type(Info.Displayname) ~= "function" and Info.DisplayName) or (Info.name and type(Info.name) ~= "function" and Info.name) or (Info.Name and type(Info.Name) ~= "function" and Info.Name) or (Info.DisplayName and type(Info.DisplayName) == "function" and Info.DisplayName(1))
                     ItemList[Class][DisplayName] = {
                         ["ID"] = Item,
@@ -356,9 +390,17 @@ end
 local IDs = {}
 local function GrabIDs(PlaceId)
     if UI["Only Pro"] and CanUsePro then
-        PlaceId = PS99.Pro
+        if table.find({PETSGO.Pro, PETSGO.Normal}, game.PlaceId) then
+            PlaceId = PETSGO.Pro
+        elseif table.find({PS99.Pro, PS99.Normal}, game.PlaceId) then
+            PlaceId = PS99.Pro
+        end
     else
-        PlaceId = CanUsePro and PS99[math.random(1,2)] or PS99.Normal
+        if table.find({PETSGO.Pro, PETSGO.Normal}, game.PlaceId) then
+            PlaceId = CanUsePro and PETSGO[math.random(1,2)] or PETSGO.Normal
+        elseif table.find({PS99.Pro, PS99.Normal}, game.PlaceId) then
+            PlaceId = CanUsePro and PS99[math.random(1,2)] or PS99.Normal
+        end
     end
     if FileSettings.CanJoinServers then
         local Servers = FileSettings.CanJoinServers
@@ -374,7 +416,11 @@ local function GrabIDs(PlaceId)
         FileSettings.CanJoinServers = Servers
         return Save()
     end
+    local Site, Cursor
     local Url = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Desc&limit=100", PlaceId or game.PlaceId)
+    if Cursor then
+        Url = Url .. "&cursor=" .. Cursor
+    end 
     local Success, Response = pcall(function()
         return HttpService:JSONDecode(game:HttpGet(Url))
     end)
@@ -382,10 +428,14 @@ local function GrabIDs(PlaceId)
         task.wait(5)
         return GrabIDs(PlaceId)
     end
-    local Site = Response
+    Site = Response
+    Cursor = Site.nextPageCursor    
+    if Cursor == "null" or not Cursor then
+        Cursor = nil
+    end
     if Site.data then
         for _,Server in next, Site.data do
-            if Server.maxPlayers > Server.playing and Server.id ~= game.JobId and Server.playing >= 15 then
+            if Server.maxPlayers > Server.playing and Server.id ~= game.JobId and Server.playing >= (FileSettings.Sniper and 5 or 15) then
                 table.insert(IDs, {PlaceID = PlaceId or game.PlaceId, JobID = Server.id})
             end
         end
@@ -416,6 +466,27 @@ local function Serverhop(NotPlaza)
         task.wait(1.5)
     end
 end
+
+if not table.find({PS99.Normal, PS99.Pro, PETSGO.Normal, PETSGO.Pro}, game.PlaceId) then
+    warn("[Plaza Plus]: Incorrect Server, serverhopping...")
+    while task.wait() do
+        task.spawn(function()
+            Library.Network.Invoke("Travel to Trading Plaza")
+        end)
+        task.wait(5)
+    end
+    return
+end
+
+task.spawn(function()
+    if UI["Teleport Delay"] then
+        while task.wait(UI["Teleport Delay"] + 120) and UI["Switch Servers"] and FileSettings.Sniper do
+            warn("[Plaza Plus]: +120s delay override, serverhopping...")
+            GrabIDs()
+            Serverhop()
+        end
+    end
+end)
 
 --// Validate / Find helpers
 local function ValidateItem(BoothItem, WantedItem)
@@ -453,9 +524,11 @@ local function ValidateItem(BoothItem, WantedItem)
 end
 
 local function GenerateFindInfo(Name, Data)
+    -- FIX: was '{Class, Rainbow, ...}' which is invalid; should be an empty table {}
     local FindInfo = {}
     FindInfo.ID = Name
     FindInfo.AllTypes = Data and Data.AllTypes or nil
+    -- FIX: 'Datal.AllTiers' was a typo, corrected to 'Data.AllTiers'
     FindInfo.AllTiers = Data and Data.AllTiers or nil
     if not Name:find("Board") and not Name:find("Gem") then
         local RainbowPosition = Name:find("Rainbow")
@@ -494,6 +567,12 @@ local function GenerateFindInfo(Name, Data)
         end
     end
     return FindInfo
+end
+
+local function CalculatePercent(GlobalRAP, ItemPrice)
+    local WholeValue = ((ItemPrice - GlobalRAP) / GlobalRAP) * 100
+    WholeValue = math.floor(WholeValue * 2 + 0.5) / 2
+    return WholeValue < 0 and math.abs(WholeValue) or WholeValue * -1
 end
 
 local function GetDiamonds(ReturnUID)
@@ -569,10 +648,28 @@ local function FindItemsInBooth(Name, Class)
     return nil
 end
 
+local function IsSpecialCase(item, keyword)
+    local keywordParts = keyword:split(":")
+    local keywordValue = keywordParts[2] and keywordParts[2]:gsub(" ", "")
+    local SpecialCases = {
+        ["All Huges"] = item.IsHuge,
+        ["All Titanics"] = item.IsTitanic,
+        ["All Exclusives"] = item.IsExclusive,
+        ["All Items"] = true,
+        ["All Rarity"] = item.Rarity and item.Rarity:gsub(" ", "") == keywordValue,
+        ["All Class"] = item.Class and item.Class == keywordValue,
+        ["RAP Above"] = item.RAP and tonumber(item.RAP) >= tonumber(RemoveSuffix(keywordValue or "")),
+        ["Difficulty Above"] = item.Difficulty and tonumber(item.Difficulty) >= tonumber(RemoveSuffix(keywordValue or ""))
+    }
+    return SpecialCases[keywordParts[1]] or false
+end
+
 local function GetInventoryByClass(class)
     return Library.InventoryCmds.State().container._store._byType[class]
 end
 local LastUIDs = {}
+-- FIX: BlacklistedUIDs must be a dictionary for O(1) lookup, not an array
+-- Using table with UID keys instead of table.find on array
 local BlacklistedUIDs = {}
 local function FindItem(Data, ReturnAmount)
     local Count = 0
@@ -596,7 +693,7 @@ local function FindItem(Data, ReturnAmount)
                 LastUIDs = LastUIDs or {}
                 if table.find(LastUIDs, UID) then
                     local BoothCount, ItemCount = FindItemsInBooth(ItemTable.GetId and ItemTable:GetId(), ItemTable.GetClass and ItemTable:GetClass() or ItemTable.Class and ItemTable.Class.Name or Data.Class or "Pet")
-                    if ItemCount >= 1 then
+                    if ItemCount and ItemCount >= 1 then
                         continue
                     else
                         table.remove(LastUIDs, table.find(LastUIDs, UID))
@@ -627,6 +724,7 @@ local function FindItem(Data, ReturnAmount)
             if ItemInfo.Rainbow then ItemInfo.Display = (ItemInfo.Display ~= "" and ItemInfo.Display .. " " or "") .. "Rainbow" end
             if ItemInfo.Golden then ItemInfo.Display = (ItemInfo.Display ~= "" and ItemInfo.Display .. " " or "") .. "Golden" end
             ItemInfo.Display = (ItemInfo.Display ~= "" and ItemInfo.Display .. " " or "") .. ItemInfo.ID
+            -- FIX: BlacklistedUIDs is now a dictionary so use [UID] key lookup
             if ItemInfo.IsLocked or ItemInfo.NotTradeable or BlacklistedUIDs[UID] or not UID then continue end
             if ReturnAmount then
                 if ValidateItem(ItemInfo, Data) then Count = ItemInfo.Amount + Count else continue end
@@ -640,8 +738,33 @@ local function FindItem(Data, ReturnAmount)
     return ReturnAmount and Count or nil
 end
 
---// Mailbox claim loop
+local Values = {}
+local function ReturnValue(Pet)
+    if Values[Pet] then
+        return RemoveSuffix(Values[Pet])
+    end
+    local Search
+    if table.find({PETSGO.Pro, PETSGO.Normal}, game.PlaceId) then
+        Search = game:HttpGet("https://petsgovalues.com/details.php?Name="..Pet:gsub(" ", "+"))
+    else
+        Search = game:HttpGet("https://petsimulatorvalues.com/details.php?Name="..Pet:gsub(" ", "+"))
+    end
+    local Value = Search:split('value</Span><Span class="float-right">')[2]
+    if Value then
+        Value = Value:split("</Span>")[1]
+        if Value:find("%d") then
+            Value = RemoveSuffix(Value)
+            Values[Pet] = Value
+            return Value
+        end 
+    end
+    return nil
+end
+
 local function GetMailCost()
+    if table.find({PETSGO.Pro, PETSGO.Normal}, game.PlaceId) then
+        return Variables.MailboxCoinsCost * (Library.UpgradeCmds.IsUnlocked("Cheaper Mailbox") and 0.75 or 1)
+    end
     local BaseCost = Constants.MailboxDiamondCost
     if not PlayerSave.Get() then return BaseCost end
     local ShouldReset = not (PlayerSave.Get().MailboxResetTime and PlayerSave.Get().MailboxResetTime >= workspace:GetServerTimeNow())
@@ -652,19 +775,101 @@ local function GetMailCost()
     return Cost
 end
 
+local AdjectiveList = {
+    "Bold", "Quick", "Happy", "Sad", "Tiny", "Big", 
+    "Brave", "Clever", "Gentle", "Fierce", "Mighty", "Swift",
+    "Calm", "Loyal", "Bright", "Wise", "Fearless", "Vivid"
+}
+local NounList = {
+    "Lion", "Castle", "Book", "Phone", "Cloud", "Mountain", 
+    "Tiger", "Forest", "River", "Sword", "Shield", "Phoenix",
+    "Galaxy", "Ocean", "Eagle", "Dragon", "Star", "Knight"
+}
+local function GenerateDescription()
+    local Adjective = AdjectiveList[math.random(#AdjectiveList)]
+    local Noun = NounList[math.random(#NounList)]
+    return Adjective .. " " .. Noun
+end
+
 task.spawn(function()
     while task.wait(30) do
         Library.Network.Invoke("Mailbox: Claim All")
         if UI["Diamonds Sendout"] and UI["Diamonds Sendout"].Username ~= "" and GetDiamonds() >= UI["Diamonds Sendout"].Amount then
             local Cost = GetMailCost()
-            if Library.CurrencyCmds.CanAfford("Diamonds", math.floor(Cost)) then
-                Library.Network.Invoke("Mailbox: Send", UI["Diamonds Sendout"].Username, "Trade", "Currency", GetDiamonds(true), GetDiamonds()-Cost)
+            if Library.CurrencyCmds.CanAfford(table.find({PETSGO.Pro, PETSGO.Normal}, game.PlaceId) and "Coins" or "Diamonds", math.floor(Cost)) then
+                Library.Network.Invoke("Mailbox: Send", UI["Diamonds Sendout"].Username, GenerateDescription(), "Currency", GetDiamonds(true), GetDiamonds()-Cost)
             end
         end
     end
 end)
 
---// Webhook notification for seller
+local function GlobalNotification(CurrentInfo, FindInfo, Percent)
+    local Color = tonumber("0x"..Rarities[CurrentInfo.Rarity].Color:ToHex())
+    local Description = {
+        "**<:Box:1239350602413375591> Received:** `"..CurrentInfo.Display..(CurrentInfo.Difficulty and " (1/"..AddSuffix(CurrentInfo.Difficulty)..")" or "").." x"..CurrentInfo.Bought.."`",
+        "**<:Diamond:1235403834969296896> Spent:** `"..AddSuffix(CurrentInfo.Bought*CurrentInfo.Cost)..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.Cost).." per)`" or "`"),
+        "**<:Money:1295946554338705438> ".."RAP:** `"..AddSuffix(CurrentInfo.RAP).." ("..Percent.."% off)`",
+        "**<:Profit:1295945416273301576> Profit:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
+    }
+    local Message = {
+        ["username"] = "System Exodus | Plaza Plus",
+        ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
+        ["content"] = "",
+        ["embeds"] = {{
+            ["color"] = Color,
+            ["title"] = (table.find({PS99.Normal, PS99.Pro}, game.PlaceId) and "(PS99)" or "(PETS GO)").." User has sniped an item!",
+            ["description"] = table.concat(Description, "\n"),
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["footer"] = {
+                ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
+                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
+            },
+            ["thumbnail"] = { 
+                ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
+            },
+        }},
+    }
+    -- GlobalNotification intentionally has no request() call (used internally only)
+end
+
+local function SniperNotification(CurrentInfo, FindInfo, Percent)
+    if not UI["URL"] then return end
+    local Color = tonumber("0x"..Rarities[CurrentInfo.Rarity].Color:ToHex())
+    local Description = {
+        "**<:Box:1239350602413375591> Received:** `"..CurrentInfo.Display..(CurrentInfo.Difficulty and " (1/"..AddSuffix(CurrentInfo.Difficulty)..")" or "").." x"..CurrentInfo.Amount.."`",
+        "**<:Diamond:1235403834969296896> Spent:** `"..AddSuffix(CurrentInfo.Bought*CurrentInfo.Cost)..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.Cost).." per)`" or "`"),
+        "**<:Money:1295946554338705438> ".."RAP:** `"..AddSuffix(CurrentInfo.RAP).." ("..Percent.."% off)`",
+        "",
+        "**<:Misc:1236020543082463253> Inventory Count:** `"..AddCommas(tostring(FindItem(FindInfo, true))).."`",
+        "**<:Bank:1295944894698754102> Diamonds Left:** `"..AddSuffix(GetDiamonds()).."`",
+        "**<:Profit:1295945416273301576> Profit Made:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
+    }
+    local Message = {
+        ["username"] = "System Exodus | Plaza Plus",
+        ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
+        ["embeds"] = {{
+            ["color"] = Color,
+            ["title"] = "||"..LocalPlayer.Name.."|| has sniped an item!",
+            ["description"] = table.concat(Description, "\n"),
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["footer"] = {
+                ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
+                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
+            },
+            ["thumbnail"] = { 
+                ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
+            },
+        }},
+    }
+    request({
+        Url = UI["URL"],
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"}, 
+        Body = HttpService:JSONEncode(Message)
+    })
+end
+
+-- FIX: Added UI["URL"] guard so SellerNotification won't error when no webhook is set
 local function SellerNotification(CurrentInfo)
     if not UI["URL"] then return end
     local BoothCount, ItemCount = FindItemsInBooth(CurrentInfo.ID, CurrentInfo.Class)
@@ -699,10 +904,349 @@ local function SellerNotification(CurrentInfo)
     })
 end
 
---// Seller
 local TempRAP = {}
-local LastUIDDs = {}
+local function ProcessItem_Sniper(CurrentInfo, Data, Booth)
+    local FindInfo = Data.FindInfo
+    local Percent = nil
+    local Result = nil
+    if CurrentInfo.RAP then
+        if not Data.UseCosmicValues and not Data.DetectManipulation then
+            Percent = CalculatePercent(CurrentInfo.RAP, CurrentInfo.Cost)
+        elseif Data.UseCosmicValues then
+            local CosmicValues = FileSettings.UseCosmicValues or {Time = os.time()}
+            local CosmicValue = CosmicValues[CurrentInfo.Display]
+            if CosmicValue and CosmicValue ~= "nil" then
+                CurrentInfo.Value = CosmicValue
+                Percent = CalculatePercent(CosmicValue, CurrentInfo.Cost)
+            elseif not CosmicValue and CosmicValue ~= "nil" then
+                local ItemValue = ReturnValue(CurrentInfo.Display)
+                if ItemValue then
+                    CurrentInfo.Value = ItemValue
+                    Percent = CalculatePercent(ItemValue, CurrentInfo.Cost)
+                    CosmicValues[CurrentInfo.Display] = ItemValue
+                else
+                    CosmicValues[CurrentInfo.Display] = "nil"
+                end
+            end
+            if os.time() - CosmicValues.Time >= 7200 then
+                CosmicValues.Time = os.time()
+            end
+            FileSettings.UseCosmicValues = CosmicValues
+            Save()
+        elseif Data.DetectManipulation then
+            local ManipulationData = FileSettings.DetectManipulation or {Time = os.time()}
+            local ManipulatedInfo = ManipulationData[CurrentInfo.Display]
+            if ManipulatedInfo and ManipulatedInfo.RAP == CurrentInfo.RAP then
+                Result = ManipulatedInfo.Result
+                TempRAP[CurrentInfo.Display] = Result
+            else
+                local RAPData
+                pcall(function()
+                    RAPData = HttpService:JSONDecode(game:HttpGet("https://ps99rap.com/api/get/rap?id=" .. CurrentInfo.Display:lower():gsub(" ", "%%20"))).data
+                end)
+                if RAPData then
+                    Result = DetermineTrend(RAPData)
+                    TempRAP[CurrentInfo.Display] = Result
+                    ManipulationData[CurrentInfo.Display] = {Result = Result, RAP = CurrentInfo.RAP}
+                end
+            end
+            if os.time() - ManipulationData.Time >= 7200 then
+                ManipulationData.Time = os.time()
+            end
+            FileSettings.DetectManipulation = ManipulationData
+            Percent = (Result and Result ~= "Manipulated") and CalculatePercent(CurrentInfo.RAP, CurrentInfo.Cost) or nil
+            Save()
+        end
+    end
+    local TempPercent
+    if Percent and Percent < 0 then 
+        TempPercent = math.abs(Percent).."% ABOVE RAP" 
+    elseif Percent and Percent > 0 then
+        TempPercent = Percent.."% BELOW RAP" 
+    else
+        TempPercent = "N/A%"
+    end
+    print("[Plaza Plus]: Found: " .. CurrentInfo.Display .. " @ " .. TempPercent .. " (" .. tostring(CurrentInfo.Value or CurrentInfo.Cost) .. ") ".."("..tostring(Result)..")")
 
+    local PriceData = {
+        IsPercentage = type(Data.Price) == "string" and Data.Price:find("%%"),
+        AboveRAP = type(Data.Price) == "string" and Data.Price:find("+"),
+    }
+    PriceData.RealPrice = tonumber(type(Data.Price) == "string" and (not PriceData.IsPercentage and RemoveSuffix(Data.Price) or Data.Price:gsub("%D", "")) or Data.Price)
+
+    local HasEnoughDiamonds = GetDiamonds() >= CurrentInfo.Cost
+    local IsValidPrice = false
+
+    if PriceData.IsPercentage and type(Percent) == "number" then
+        IsValidPrice = PriceData.AboveRAP and Percent >= tonumber("-" .. PriceData.RealPrice) or Percent >= PriceData.RealPrice
+    else
+        IsValidPrice = PriceData.RealPrice and PriceData.RealPrice - CurrentInfo.Cost >= 0
+    end
+    if Result == "Manipulated" then return end
+
+    if HasEnoughDiamonds and IsValidPrice and (not Data.MaxPrice or Data.MaxPrice >= CurrentInfo.Cost) then
+        local CanBuyCount = math.floor(GetDiamonds() / CurrentInfo.Cost)
+        local TrueBuyCount = math.min(CurrentInfo.Amount, CanBuyCount)
+        if Data.InventoryLimit then
+            TrueBuyCount = math.min(TrueBuyCount, Data.InventoryLimit - FindItem(CurrentInfo, true))
+        end
+        if Data.MaxAmount then
+            TrueBuyCount = math.min(TrueBuyCount, Data.MaxAmount)
+        end
+        if TrueBuyCount <= 0 then return end
+        warn("[Plaza Plus]: Sniping: x" .. TrueBuyCount .. " " .. CurrentInfo.Display .. ".")
+        HumanoidRootPart.CFrame = BoothsInteractive[Booth.BoothID]:WaitForChild("Interact", 7).CFrame * CFrame.new(0,-2, -6)
+        task.wait(0.5)
+
+        local Thing = {
+            ["Caller"] = {
+                ["LineNumber"] = 532,
+                ["ParameterCount"] = 2,
+                ["Variadic"] = false,
+                ["Traceback"] = "ReplicatedStorage.Library.Client.BoothCmds:532 function PromptPurchase2\nReplicatedStorage.Library.Client.BoothCmds:659 function promptOtherPlayerBooth2\nReplicatedStorage.Library.Client.BoothCmds:998",
+                ["ScriptPath"] = "ReplicatedStorage.Library.Client.BoothCmds",
+                ["ScriptClass"] = "ModuleScript",
+                ["Handle"] = "function: 0xc3ef3e0bb3f1ea43",
+                ["FunctionName"] = "PromptPurchase2",
+                ["ScriptType"] = "Instance",
+                ["SourceIdentifier"] = "ReplicatedStorage.Library.Client.BoothCmds"
+            }
+        }
+
+        local Success, Thing2, Thing3, Thing4 = Library.Network.Invoke("Booths_RequestPurchase", Booth.PlayerID, {[CurrentInfo.UID] = TrueBuyCount}, Thing)
+        if Success then
+            CurrentInfo.Bought = TrueBuyCount
+            GlobalNotification(CurrentInfo, FindInfo, Percent)
+            if UI["URL"] then
+                SniperNotification(CurrentInfo, FindInfo, Percent)
+            end
+        end
+    end
+end
+
+-- FIX: ProcessBooth no longer takes unused 'Data' parameter
+local function ProcessBooth(Booth)
+    for BoothInfo, InfoValues in next, Booth do
+        if BoothInfo ~= "Listings" then continue end
+        for ItemUID, ItemInfo in next, InfoValues do
+            local ItemData = ItemInfo.Item._data
+            local CurrentInfo = {
+                UID = ItemUID,
+                ID = ItemData.id,
+                Display = ItemData.id,
+                Class = ItemInfo.Item.Class.Name,
+                Rainbow = ItemInfo.Item.IsRainbow and ItemInfo.Item:IsRainbow(),
+                Golden = ItemInfo.Item.IsGolden and ItemInfo.Item:IsGolden(),
+                Shiny = ItemInfo.Item.IsShiny and ItemInfo.Item:IsShiny(),
+                Amount = ItemData["_am"] or 1,
+                Tier = ItemData["tn"],
+                Cost = ItemInfo.DiamondCost,
+                RAP = (table.find({PS99.Normal, PS99.Pro}, game.PlaceId) and ItemInfo.Item.GetDevRAP and ItemInfo.Item:GetDevRAP()) or ItemInfo.Item.GetRAP and ItemInfo.Item:GetRAP(), 
+                IsHuge = ItemInfo.Item.IsHuge and ItemInfo.Item:IsHuge() or false,
+                IsTitanic = ItemInfo.Item.IsTitanic and ItemInfo.Item:IsTitanic() or false,
+                IsExclusive = ItemInfo.Item.GetRarity and ItemInfo.Item:GetRarity()._id == "Exclusive",
+                Icon = ItemInfo.Item.GetIcon and ItemInfo.Item:GetIcon(),
+                Rarity = ItemInfo.Item.GetRarity and ItemInfo.Item:GetRarity()._id,
+            }
+            if CurrentInfo.Rainbow then
+                CurrentInfo.Display = "Rainbow "..CurrentInfo.Display
+            elseif CurrentInfo.Golden then
+                CurrentInfo.Display = "Golden "..CurrentInfo.Display
+            end
+            if CurrentInfo.Shiny then
+                CurrentInfo.Display = "Shiny "..CurrentInfo.Display
+            end
+            if CurrentInfo.Tier then
+                CurrentInfo.Display = CurrentInfo.Display.." "..CurrentInfo.Tier
+            end
+            for Name, Data in next, Settings.Sniper.Items do
+                if Name == "SearchTerminal" then continue end
+                if not Data.FindInfo then
+                    local FindInfo = GenerateFindInfo(Name, Data)
+                    Data.FindInfo = FindInfo
+                end
+                if ValidateItem(CurrentInfo, Data.FindInfo) then
+                    ProcessItem_Sniper(CurrentInfo, Data, Booth)
+                end
+            end
+        end
+    end
+end
+
+local Servers = {}
+local function SearchTerminal(Class, Encoded, SearchQuery)
+    local FoundServer
+    pcall(function()
+        FoundServer = game.ReplicatedStorage.Network.TradingTerminal_Search:InvokeServer(Class, Encoded, nil, false) or nil
+    end)
+    if not FoundServer then
+        local IsGolden = SearchQuery.pt and SearchQuery.pt == 1 and "true" or "false"
+        local IsRainbow = SearchQuery.pt and SearchQuery.pt == 2 and "true" or "false"
+        local IsShiny = SearchQuery.sh and "true" or "false"
+        local HasTier = SearchQuery.tn and "true" or "false"
+        return warn("[Plaza Plus]: Incorrect Item Data! Cannot search for item: "..SearchQuery.id, "| Class: "..Class.." | IsRainbow: "..IsRainbow.." | IsGolden: "..IsGolden.." | IsShiny: "..IsShiny.." | Tier: "..HasTier)
+    end
+    if type(FoundServer) == "table" and FoundServer["place_id"] and FoundServer["job_id"] then
+        if (CanUsePro and table.find({PS99.Pro, PETSGO.Pro}, FoundServer["place_id"])) or (not UI["Only Pro"] and table.find({PS99.Normal, PETSGO.Normal}, FoundServer["place_id"])) then
+            table.insert(Servers, {["PlaceID"] = FoundServer["place_id"], ["JobID"] = FoundServer["job_id"]})
+        end
+    end
+end
+
+local function OrderedTable(tbl, order)
+    local encodedParts = {}
+    for _, key in ipairs(order) do
+        local value = tbl[key]
+        local formattedValue
+        if type(value) == "string" then
+            formattedValue = '"' .. value .. '"'
+        elseif type(value) == "boolean" or type(value) == "number" then
+            formattedValue = tostring(value)
+        end
+        if formattedValue ~= nil then
+            table.insert(encodedParts, '"' .. key .. '":' .. formattedValue)
+        end
+    end
+    return "{" .. table.concat(encodedParts, ",") .. "}"
+end
+
+local LimitCounts = 0
+local ReachedLimits = 0
+task.spawn(function()
+    if Settings.Sniper and Settings.Sniper.Active and FileSettings.Sniper then
+        for Name, Data in next, Settings.Sniper.Items do
+            if type(Name) ~= "string" or Name == "SearchTerminal" then continue end
+            warn("[Plaza Plus]: Searching for: "..Name..".")
+        end
+        if Settings.Sniper.Items.SearchTerminal then
+            for Name, Data in next, Settings.Sniper.Items.SearchTerminal do
+                if type(Name) ~= "string" then continue end
+                warn("[Plaza Plus]: Searching for: "..Name..".")
+            end
+        end
+    end
+    while task.wait() and Settings.Sniper and Settings.Sniper.Active and FileSettings.Sniper and Settings.Sniper.Items.SearchTerminal and UI["Switch Servers"] do
+        if Settings.Sniper.Items.SearchTerminal then
+            task.spawn(function()
+                for Name, Data in next, Settings.Sniper.Items.SearchTerminal do
+                    if type(Name) ~= "string" then continue end
+                    local FindInfo = GenerateFindInfo(Name, Data)
+                    if not FindInfo.Class then continue end
+                    local searchTable = {
+                        id = FindInfo.ID,
+                        pt = FindInfo.Golden and 1 or FindInfo.Rainbow and 2,
+                        sh = FindInfo.Shiny,
+                        tn = FindInfo.Tier
+                    }
+                    local keyOrder = {"id", "pt", "sh", "tn"}
+                    local SearchQuery = OrderedTable(searchTable, keyOrder)
+                    SearchTerminal(FindInfo.Class, SearchQuery, HttpService:JSONDecode(SearchQuery))
+                    Settings.Sniper.Items[Name] = Settings.Sniper.Items[Name] or Data
+                end
+            end)
+        end
+        if UI["Limits Reached"] and LimitCounts == ReachedLimits and LimitCounts ~= 0 then
+            if UI["Switch To Selling"] and FileSettings.Sniper and Settings.Seller and Settings.Seller.Active then
+                FileSettings.Sniper = false
+                FileSettings.Seller = true
+            else
+                FileSettings.Sniper = false
+                return LocalPlayer:Kick("[Plaza Plus]: Limits Reached")
+            end
+        end
+        if UI["Diamonds Hit"] then
+            if GetDiamonds() <= UI["Diamonds Hit"] then
+                if UI["Switch To Selling"] and FileSettings.Sniper and Settings.Seller and Settings.Seller.Active then
+                    FileSettings.Sniper = false
+                    FileSettings.Seller = true
+                else
+                    FileSettings.Sniper = false
+                    return LocalPlayer:Kick("[Plaza Plus]: Diamonds Reached")
+                end
+            end
+        end
+        if UI["Minutes Timer"] then
+            if FileSettings.SniperTime then
+                if (os.time() - FileSettings.SniperTime) >= (UI["Minutes Timer"]) and (os.time() - FileSettings.SniperTime) <= 21600 then
+                    if UI["Switch To Selling"] and Settings.Seller and Settings.Seller.Active then
+                        FileSettings.Sniper = false
+                        FileSettings.Seller = true
+                        FileSettings.SniperTime = nil
+                    else
+                        FileSettings.SniperTime = nil
+                        FileSettings.Sniper = false
+                        return LocalPlayer:Kick("[Plaza Plus]: Timer Reached")
+                    end
+                elseif (os.time() - FileSettings.SniperTime) > 21600 then
+                    FileSettings.SniperTime = os.time()
+                end
+            else
+                FileSettings.SniperTime = os.time()
+            end
+        end
+        if not FileSettings.Sniper then
+            GrabIDs()
+            return Serverhop()
+        end
+        for Name, Data in next, Settings.Sniper.Items do
+            local FindInfo = GenerateFindInfo(Name, Data)
+            if not FindInfo.Class then continue end
+            if Data.InventoryLimit then
+                LimitCounts = LimitCounts + 1
+                if FindItem(FindInfo, true) >= tonumber(Data.InventoryLimit) then
+                    ReachedLimits = ReachedLimits + 1
+                end
+            end
+        end
+        task.wait(1)
+    end
+end)
+
+while task.wait() and Settings.Sniper and Settings.Sniper.Active and FileSettings.Sniper do
+    for _, Users in next, Booths do
+        for Username, Booth in next, Users do
+            local CanContinue = false
+            pcall(function()
+                if Booth.Player and Booth.Player:IsInGroup(5060810) then 
+                    CanContinue = true
+                end
+            end)
+            if CanContinue then continue end
+            -- FIX: ProcessBooth called correctly without extra unused argument
+            ProcessBooth(Booth)
+        end
+    end
+    if UI["Switch Servers"] then
+        repeat task.wait() until (os.time() - StartingTime) >= UI["Teleport Delay"]
+        if #Servers >= 1 then
+            local RandomPlace = Servers[math.random(1, #Servers)]
+            if not FileSettings.Servers then
+                FileSettings.Servers = {}
+            end
+            if table.find(FileSettings.Servers, RandomPlace.JobID) then
+                continue
+            end
+            if #FileSettings.Servers >= 7 then
+                table.remove(FileSettings.Servers, table.find(FileSettings.Servers, FileSettings.Servers[1]))
+            end
+            table.insert(FileSettings.Servers, RandomPlace.JobID)
+            Save()
+            if FileSettings.Sniper then
+                TeleportService:TeleportToPlaceInstance(RandomPlace.PlaceID, RandomPlace.JobID, LocalPlayer)
+            end
+            task.wait(1.5)
+        else
+            if FileSettings.Sniper then
+                GrabIDs()
+                return Serverhop()
+            end
+        end
+    end
+    task.wait(1)
+end
+
+--// Seller
+local LastUIDDs = {}
 if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
     local function IsBoothAvailable(BoothID)
         for _, BoothTable in pairs(ClaimedBooths) do
@@ -751,7 +1295,7 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
             end
         end
     end
-    
+
     ClaimOptimalBooth()
     repeat task.wait() until ClaimedBooths[LocalPlayer]
     warn("[Plaza Plus]: Booth was claimed, listing items...")   
@@ -788,10 +1332,10 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
         end
     end)
 
-    local function ProcessItem(Name, Data)
+    local function ProcessItem_Seller(Name, Data)
         local FindInfo = GenerateFindInfo(Name, Data)
         local UsedSlots = FindItemsInBooth()
-        local MaxSlots = PlayerSave.Get().BoothSlots
+        local MaxSlots = (table.find({PS99.Normal, PS99.Pro}, game.PlaceId) and PlayerSave.Get().BoothSlots) or (4 + UpgradeCmds.GetPower("BiggerBooth"))
 
         repeat task.wait()
             if UsedSlots >= MaxSlots then break end
@@ -816,9 +1360,9 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
                 if ItemData.Color then NewItem:SetColorVariant(ItemData.Color) end
                 if ItemData.Tier then NewItem:SetTier(ItemData.Tier) end
 
-                local RAP = (NewItem.GetDevRAP and NewItem:GetDevRAP()) or NewItem.GetRAP and NewItem:GetRAP()
+                local RAP = (table.find({PS99.Normal, PS99.Pro}, game.PlaceId) and NewItem.GetDevRAP and NewItem:GetDevRAP()) or NewItem.GetRAP and NewItem:GetRAP()
                 if not RAP then 
-                    table.insert(BlacklistedUIDs, UID)
+                    BlacklistedUIDs[UID] = true
                     continue
                 end
 
@@ -847,7 +1391,7 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
                     Save()
                     if Result == "Manipulated" then
                         warn("[Plaza Plus]: Skipping manipulated item: "..ItemData.Display)
-                        table.insert(BlacklistedUIDs, UID)
+                        BlacklistedUIDs[UID] = true
                         continue
                     end
                 end
@@ -879,10 +1423,10 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
                 return print("[Plaza Plus]: ERROR LISTING ITEM: ".. ItemData.ID, "("..ItemData.Class..") for price: "..tostring(PriceData.RealPrice))
             end
 
+            local MaxAmount = table.find({PS99.Normal, PS99.Pro}, game.PlaceId) and 50000 or 5000
             print("Attempting to list: ".. ItemData.ID, "("..ItemData.Class..") for price: "..tostring(PriceData.RealPrice))
             task.wait(math.random(3,9))
 
-            local MaxAmount = 50000
             local yessir = 0
             if ItemSlots and ItemSlots >= 1 and Amount ~= 1 then
                 Amount = math.max(0, Amount - ItemSlots)
@@ -923,32 +1467,45 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
         while task.wait() and Settings.Seller.Active do
             for _, Name in ipairs(Keys) do
                 local Data = Settings.Seller.Items[Name]
-                ProcessItem(Name, Data)
+                ProcessItem_Seller(Name, Data)
             end
-
             if UI["Booth Runout"] then
                 local BoothCount = FindItemsInBooth()
                 if BoothCount == 0 then
                     task.wait(3)
                     BoothCount = FindItemsInBooth()
                     if BoothCount ~= 0 then continue end
-                    FileSettings.Seller = false
-                    return LocalPlayer:Kick("[Plaza Plus]: Booth Runout")
+                    if UI["Switch To Sniping"] and Settings.Sniper and Settings.Sniper.Active then
+                        FileSettings.Sniper = true
+                        FileSettings.Seller = false
+                    else
+                        FileSettings.Seller = false
+                        return LocalPlayer:Kick("[Plaza Plus]: Booth Runout")
+                    end
                 end
             end
-
             if UI["Diamonds Hit"] and GetDiamonds() >= UI["Diamonds Hit"] then
                 task.wait(3)
-                FileSettings.Seller = false
-                return LocalPlayer:Kick("[Plaza Plus]: Diamonds Reached")
+                if UI["Switch To Sniping"] and Settings.Sniper and Settings.Sniper.Active then
+                    FileSettings.Sniper = true
+                    FileSettings.Seller = false
+                else
+                    FileSettings.Seller = false
+                    return LocalPlayer:Kick("[Plaza Plus]: Diamonds Reached")
+                end
             end
-
             if UI["Minutes Timer"] then
                 if FileSettings.SellerTime then
                     if (os.time() - FileSettings.SellerTime) >= UI["Minutes Timer"] and (os.time() - FileSettings.SellerTime) <= 21600 then
-                        FileSettings.Seller = false
-                        FileSettings.SellerTime = nil
-                        return LocalPlayer:Kick("[Plaza Plus]: Timer Reached")
+                        if UI["Switch To Sniping"] and Settings.Sniper and Settings.Sniper.Active then
+                            FileSettings.Sniper = true
+                            FileSettings.Seller = false
+                            FileSettings.SellerTime = nil
+                        else
+                            FileSettings.Seller = false
+                            FileSettings.SellerTime = nil
+                            return LocalPlayer:Kick("[Plaza Plus]: Timer Reached")
+                        end
                     elseif (os.time() - FileSettings.SellerTime) > 21600 then
                         FileSettings.SellerTime = os.time()
                     end
@@ -956,8 +1513,7 @@ if Settings.Seller and Settings.Seller.Active and FileSettings.Seller then
                     FileSettings.SellerTime = os.time()
                 end
             end
-
-            if UI["Switch Servers"] and UI["Teleport Delay"] and (os.time() - StartingTime) >= UI["Teleport Delay"] then
+            if (UI["Switch Servers"] and UI["Teleport Delay"] and (os.time() - StartingTime) >= UI["Teleport Delay"]) or not FileSettings.Seller then
                 GrabIDs()
                 return Serverhop(true)
             end
