@@ -812,7 +812,7 @@ local function GlobalNotification(CurrentInfo, FindInfo, Percent)
         "**<:Profit:1295945416273301576> Profit:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
     }
     local Message = {
-        ["username"] = "System Exodus | Plaza Plus",
+        ["username"] = "System Dream | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["content"] = "",
         ["embeds"] = {{
@@ -822,7 +822,7 @@ local function GlobalNotification(CurrentInfo, FindInfo, Percent)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
+                ["text"] = "@majorenx99 - discord.gg/"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
@@ -845,7 +845,7 @@ local function SniperNotification(CurrentInfo, FindInfo, Percent)
         "**<:Profit:1295945416273301576> Profit Made:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
     }
     local Message = {
-        ["username"] = "System Exodus | Plaza Plus",
+        ["username"] = "System Dream | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["embeds"] = {{
             ["color"] = Color,
@@ -854,7 +854,7 @@ local function SniperNotification(CurrentInfo, FindInfo, Percent)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
+                ["text"] = "@majorenx99 - discord.gg/"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
@@ -880,7 +880,7 @@ local function SellerNotification(CurrentInfo)
         "**<:Bank:1295944894698754102> Current Diamonds:** `"..AddSuffix(GetDiamonds()).."`",
     }
     local Message = {
-        ["username"] = "System Exodus | Plaza Plus",
+        ["username"] = "System Dream | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["embeds"] = {{
             ["color"] = 12035327,
@@ -889,7 +889,7 @@ local function SellerNotification(CurrentInfo)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
+                ["text"] = "@majorenx99 - discord.gg/"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
