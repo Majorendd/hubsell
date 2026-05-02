@@ -447,6 +447,16 @@ local function GrabIDs(PlaceId)
     FileSettings.Servers = {HaveJoined = 1, Time = os.time(), IDs}   
     return Save()
 end
+local function DisableAntiScam()
+    pcall(function()
+        for _, v in next, LocalPlayer.PlayerScripts.Scripts.Core:GetChildren() do
+            if v.Name == "Server Closing" or v.Name == "Anti Scam" then
+                v.Enabled = false
+            end
+        end
+    end)
+end
+
 local function Serverhop(NotPlaza)
     repeat task.wait() until (((os.time() - StartingTime) >= UI["Teleport Delay"]) or NotPlaza) and #IDs >= 1
     while task.wait() do
@@ -462,7 +472,22 @@ local function Serverhop(NotPlaza)
         table.insert(Servers, RandomServer.JobID)
         FileSettings.LastJoinedServers = Servers
         Save()
-        TeleportService:TeleportToPlaceInstance(RandomServer.PlaceID, RandomServer.JobID, LocalPlayer)        
+
+        -- Disable anti-scam right before every teleport attempt
+        DisableAntiScam()
+
+        -- Use TeleportAsync with TeleportOptions to avoid anti-scam detection
+        local TeleportOptions = Instance.new("TeleportOptions")
+        TeleportOptions.ServerJobId = RandomServer.JobID
+        local Success, Error = pcall(function()
+            TeleportService:TeleportAsync(RandomServer.PlaceID, {LocalPlayer}, TeleportOptions)
+        end)
+        if not Success then
+            warn("[Plaza Plus]: Teleport failed: " .. tostring(Error) .. " - retrying...")
+            table.remove(FileSettings.LastJoinedServers, table.find(FileSettings.LastJoinedServers, RandomServer.JobID))
+            task.wait(3)
+            continue
+        end
         task.wait(1.5)
     end
 end
@@ -812,7 +837,7 @@ local function GlobalNotification(CurrentInfo, FindInfo, Percent)
         "**<:Profit:1295945416273301576> Profit:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
     }
     local Message = {
-        ["username"] = "System Dream | Plaza Plus",
+        ["username"] = "System Exodus | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["content"] = "",
         ["embeds"] = {{
@@ -822,7 +847,7 @@ local function GlobalNotification(CurrentInfo, FindInfo, Percent)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@majorenx99 - discord.gg/"
+                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
@@ -845,7 +870,7 @@ local function SniperNotification(CurrentInfo, FindInfo, Percent)
         "**<:Profit:1295945416273301576> Profit Made:** `"..AddSuffix((CurrentInfo.Bought*CurrentInfo.RAP) - (CurrentInfo.Bought*CurrentInfo.Cost))..(CurrentInfo.Amount > 1 and " ("..AddSuffix(CurrentInfo.RAP-CurrentInfo.Cost).." per)`" or "`")
     }
     local Message = {
-        ["username"] = "System Dream | Plaza Plus",
+        ["username"] = "System Exodus | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["embeds"] = {{
             ["color"] = Color,
@@ -854,7 +879,7 @@ local function SniperNotification(CurrentInfo, FindInfo, Percent)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@majorenx99 - discord.gg/"
+                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
@@ -880,7 +905,7 @@ local function SellerNotification(CurrentInfo)
         "**<:Bank:1295944894698754102> Current Diamonds:** `"..AddSuffix(GetDiamonds()).."`",
     }
     local Message = {
-        ["username"] = "System Dream | Plaza Plus",
+        ["username"] = "System Exodus | Plaza Plus",
         ["avatar_url"] = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
         ["embeds"] = {{
             ["color"] = 12035327,
@@ -889,7 +914,7 @@ local function SellerNotification(CurrentInfo)
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
                 ["icon_url"] = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png",
-                ["text"] = "@majorenx99 - discord.gg/"
+                ["text"] = "@Jxnt - discord.gg/Fyeju7nv3m"
             },
             ["thumbnail"] = { 
                 ["url"] = "https://biggamesapi.io/image/"..Library.Functions.ParseAssetId(CurrentInfo.Icon)
@@ -1232,7 +1257,12 @@ while task.wait() and Settings.Sniper and Settings.Sniper.Active and FileSetting
             table.insert(FileSettings.Servers, RandomPlace.JobID)
             Save()
             if FileSettings.Sniper then
-                TeleportService:TeleportToPlaceInstance(RandomPlace.PlaceID, RandomPlace.JobID, LocalPlayer)
+                DisableAntiScam()
+                local TeleportOptions = Instance.new("TeleportOptions")
+                TeleportOptions.ServerJobId = RandomPlace.JobID
+                pcall(function()
+                    TeleportService:TeleportAsync(RandomPlace.PlaceID, {LocalPlayer}, TeleportOptions)
+                end)
             end
             task.wait(1.5)
         else
