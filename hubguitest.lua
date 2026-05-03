@@ -634,8 +634,21 @@ local function ItemCard(parent,name,price,extra,onRemove)
     Stroke(card,C.Border,1)
     local nl=Instance.new("TextLabel"); nl.Text=name; nl.TextSize=12; nl.Font=Enum.Font.GothamBold; nl.TextColor3=C.Text; nl.BackgroundTransparency=1; nl.Position=UDim2.new(0,10,0,6); nl.Size=UDim2.new(1,-50,0,18); nl.TextXAlignment=Enum.TextXAlignment.Left; nl.Parent=card; nl.TextTruncate=Enum.TextTruncate.AtEnd
     local dl=Instance.new("TextLabel"); dl.Text="💎 "..tostring(price)..(extra~="" and "  ·  "..extra or ""); dl.TextSize=11; dl.Font=Enum.Font.Gotham; dl.TextColor3=C.Sub; dl.BackgroundTransparency=1; dl.Position=UDim2.new(0,10,0,26); dl.Size=UDim2.new(1,-50,0,14); dl.TextXAlignment=Enum.TextXAlignment.Left; dl.Parent=card
+    -- Live badge shown when script is running
+    local liveBadge=Instance.new("TextLabel"); liveBadge.Text="● LIVE"; liveBadge.TextSize=9; liveBadge.Font=Enum.Font.GothamBold; liveBadge.TextColor3=C.Green; liveBadge.BackgroundTransparency=1; liveBadge.Position=UDim2.new(1,-70,0,6); liveBadge.Size=UDim2.new(0,36,0,12); liveBadge.TextXAlignment=Enum.TextXAlignment.Right; liveBadge.Parent=card; liveBadge.Visible=false
+    task.spawn(function()
+        while card.Parent do
+            liveBadge.Visible=IsRunning
+            task.wait(1)
+        end
+    end)
     local rb=Instance.new("TextButton"); rb.Size=UDim2.new(0,26,0,26); rb.Position=UDim2.new(1,-34,0.5,-13); rb.BackgroundColor3=Color3.fromRGB(50,15,15); rb.TextColor3=C.Red; rb.Text="✕"; rb.TextSize=12; rb.Font=Enum.Font.GothamBold; rb.BorderSizePixel=0; rb.AutoButtonColor=false; rb.Parent=card; Corner(rb,6)
-    rb.MouseButton1Click:Connect(function() card:Destroy(); onRemove() end)
+    rb.MouseButton1Click:Connect(function()
+        card:Destroy()
+        -- Also wipe from blacklist so re-adding works cleanly
+        for uid,_ in pairs(BlacklistedUIDs) do BlacklistedUIDs[uid]=nil end
+        onRemove()
+    end)
     return card
 end
 
@@ -699,7 +712,12 @@ do
             local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
         end)
         nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""; setPrio(false)
-        statusL.TextColor3=C.Green; statusL.Text="✓ Added"; task.delay(2,function() statusL.Text="" end)
+        if IsRunning then
+            statusL.TextColor3=C.Yellow; statusL.Text="⚡ Added live — will list next cycle"
+        else
+            statusL.TextColor3=C.Green; statusL.Text="✓ Added"
+        end
+        task.delay(2,function() statusL.Text="" end)
         local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
     end)
 end
@@ -761,7 +779,12 @@ do
             local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
         end)
         sNameIn.Text=""; sPriceIn.Text=""; sLimitIn.Text=""; setAllTypes(false); setDetect(false)
-        sStatusL.TextColor3=C.Green; sStatusL.Text="✓ Added"; task.delay(2,function() sStatusL.Text="" end)
+        if IsRunning then
+            sStatusL.TextColor3=C.Yellow; sStatusL.Text="⚡ Added live — sniping next cycle"
+        else
+            sStatusL.TextColor3=C.Green; sStatusL.Text="✓ Added"
+        end
+        task.delay(2,function() sStatusL.Text="" end)
         local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
     end)
 end
@@ -931,21 +954,20 @@ local function RunSeller()
     end
 
     SellerThread=task.spawn(function()
-        -- Sort by priority
-        local keys={priority={},normal={}}
-        for _,item in pairs(Cfg.SellerItems or {}) do
-            if item.Priority then table.insert(keys.priority,item) else table.insert(keys.normal,item) end
-        end
-        local ordered={}
-        for _,v in ipairs(keys.priority) do table.insert(ordered,v) end
-        for _,v in ipairs(keys.normal)   do table.insert(ordered,v) end
-
         while SellerRunning do
-            for _,item in ipairs(ordered) do
-                if not SellerRunning then break end
-                ProcessSellerItem(item.Name,item)
+            -- Rebuild ordered list every cycle — picks up items added live via GUI
+            local priority, normal = {}, {}
+            for _, item in pairs(Cfg.SellerItems or {}) do
+                if item.Priority then table.insert(priority, item) else table.insert(normal, item) end
             end
-            -- Server switch check
+            local ordered = {}
+            for _,v in ipairs(priority) do table.insert(ordered, v) end
+            for _,v in ipairs(normal)   do table.insert(ordered, v) end
+
+            for _, item in ipairs(ordered) do
+                if not SellerRunning then break end
+                ProcessSellerItem(item.Name, item)
+            end
             if Cfg.SwitchServers and Cfg.Delay and (os.time()-StartingTime)>=(Cfg.Delay*60) then
                 warn("[Plaza Plus]: Switch servers triggered")
                 GrabIDs(); Serverhop()
@@ -964,10 +986,14 @@ local function RunSniper()
     SniperRunning=true
     botStatus.Text="🎯 Sniper running..."; botStatus.TextColor3=C.Yellow
 
-    -- Pre-build FindInfo for all items
+    -- FindInfo cache — rebuilt each cycle so newly added snipe targets work live
     local FindInfoCache={}
-    for _,item in pairs(Cfg.SniperItems or {}) do
-        FindInfoCache[item.Name]=GenerateFindInfo(item.Name,item)
+
+    local function GetFindInfo(item)
+        if not FindInfoCache[item.Name] then
+            FindInfoCache[item.Name]=GenerateFindInfo(item.Name,item)
+        end
+        return FindInfoCache[item.Name]
     end
 
     local function ProcessBooth(Booth)
@@ -994,7 +1020,7 @@ local function RunSniper()
                 if CI.Tier then CI.Display=CI.Display.." "..CI.Tier end
 
                 for _,item in pairs(Cfg.SniperItems or {}) do
-                    local FI=FindInfoCache[item.Name]
+                    local FI=GetFindInfo(item)
                     if not FI then continue end
                     if not ValidateItem(CI,FI) then continue end
 
