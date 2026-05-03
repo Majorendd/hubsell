@@ -417,37 +417,60 @@ end
 -- ══════════════════════════════════════════
 --  WEBHOOK
 -- ══════════════════════════════════════════
-local function SendWebhook(embed)
+local function SendWebhook(payload)
     if not Cfg.WebhookURL or Cfg.WebhookURL=="" then return end
     pcall(function()
         request({
             Url=Cfg.WebhookURL, Method="POST",
             Headers={["Content-Type"]="application/json"},
-            Body=HttpService:JSONEncode({
-                username="Plaza Plus",
-                avatar_url="https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
-                embeds={embed}
-            })
+            Body=HttpService:JSONEncode(payload)
         })
     end)
 end
 
-local function SniperWebhook(info,percent)
+local function SniperWebhook(info, percent)
+    local rarityColor = Rarities[info.Rarity] and tonumber("0x"..Rarities[info.Rarity].Color:ToHex()) or 6316273
+    local profitAmt = (info.Bought * info.RAP) - (info.Bought * info.Cost)
+    local perText = info.Bought > 1 and " ("..AddSuffix(info.Cost).." per)" or ""
+    local description =
+        "<:Box:1239350602413375591> **Received:** `"..info.Display.." x"..info.Bought.."`\n"..
+        "<:Diamond:1235403834969296896> **Spent:** `"..AddSuffix(info.Bought*info.Cost)..perText.."`\n"..
+        "<:Money:1295946554338705438> **RAP:** `"..AddSuffix(info.RAP).." ("..tostring(math.abs(percent)).."% below)`\n"..
+        "<:Profit:1295945416273301576> **Profit:** `"..AddSuffix(profitAmt).."`\n"..
+        "<:Bank:1295944894698754102> **Diamonds Left:** `"..AddSuffix(GetDiamonds()).."`"
     SendWebhook({
-        color=tonumber("0x"..(Rarities[info.Rarity] and Rarities[info.Rarity].Color:ToHex() or "6366f1")),
-        title="Sniped: "..info.Display,
-        description="💎 **Spent:** `"..AddSuffix(info.Cost*info.Bought).."`\n📈 **RAP:** `"..AddSuffix(info.RAP).."` ("..tostring(percent).."% below)\n💰 **Profit:** `"..AddSuffix((info.Bought*info.RAP)-(info.Bought*info.Cost)).."`",
-        timestamp=DateTime.now():ToIsoDate()
+        username = "Plaza Plus",
+        avatar_url = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
+        embeds = {{
+            color = rarityColor,
+            title = "||"..LocalPlayer.Name.."|| has sniped an item!",
+            description = description,
+            thumbnail = {url = info.Icon and ("https://biggamesapi.io/image/"..tostring(info.Icon)) or nil},
+            footer = {text = "@"..LocalPlayer.Name.." · Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
+            timestamp = DateTime.now():ToIsoDate(),
+        }}
     })
 end
 
 local function SellerWebhook(info)
-    local _,ic=FindItemsInBooth(info.ID,info.Class)
+    local _,ic = FindItemsInBooth(info.ID, info.Class)
+    local perText = info.Amount > 1 and " ("..AddSuffix(info.Spent / info.Amount).." per)" or ""
+    local description =
+        "<:Box:1239350602413375591> **Sold:** `"..info.Name.." x"..info.Amount.."`\n"..
+        "<:Diamond:1235403834969296896> **Gained:** `"..AddSuffix(info.Spent)..perText.."`\n"..
+        "<:Booth:1239350605294604378> **Booth Count:** `"..(ic and tostring(ic) or "?").."`\n"..
+        "<:Bank:1295944894698754102> **Current Diamonds:** `"..AddSuffix(GetDiamonds()).."`"
     SendWebhook({
-        color=3394765,
-        title="Sold: "..info.Name,
-        description="💎 **Gained:** `"..AddSuffix(info.Spent).."`\n🏪 **Booth:** `"..(ic and AddCommas(tostring(ic)) or "?").." remaining`\n💰 **Balance:** `"..AddSuffix(GetDiamonds()).."`",
-        timestamp=DateTime.now():ToIsoDate()
+        username = "Plaza Plus",
+        avatar_url = "https://i.gyazo.com/dbefd0df338c7ff9c08fc85ecea0df94.png",
+        embeds = {{
+            color = 1150279, -- green teal matching screenshot
+            title = "||"..LocalPlayer.Name.."|| has sold an item!",
+            description = description,
+            thumbnail = {url = info.Icon and ("https://biggamesapi.io/image/"..tostring(info.Icon)) or nil},
+            footer = {text = "@"..LocalPlayer.Name.." · Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
+            timestamp = DateTime.now():ToIsoDate(),
+        }}
     })
 end
 
@@ -687,38 +710,80 @@ do
     FLabel(SRight,"Class  (Misc, Pet … blank=auto)",158)
     local classIn=Input(SRight,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
 
+    -- Type row: Rainbow / Golden / Shiny toggles
+    FLabel(SRight,"Pet Type",208)
+    local typeRow=Frame(SRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224),C.Panel,0); typeRow.BackgroundTransparency=1
+    -- Rainbow
+    local rainbowDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(99,200,255),5)
+    local rainbowLbl=Instance.new("TextLabel"); rainbowLbl.Text="Rainbow"; rainbowLbl.TextSize=11; rainbowLbl.Font=Enum.Font.Gotham; rainbowLbl.TextColor3=C.Sub; rainbowLbl.BackgroundTransparency=1; rainbowLbl.Position=UDim2.new(0,14,0,0); rainbowLbl.Size=UDim2.new(0,60,1,0); rainbowLbl.TextXAlignment=Enum.TextXAlignment.Left; rainbowLbl.Parent=typeRow
+    local _,getRainbow,_,setRainbow=Toggle(typeRow,UDim2.new(0,74,0.5,-11),false)
+    -- Golden
+    local goldenDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0.48,0,0.5,-5),Color3.fromRGB(255,200,50),5)
+    local goldenLbl=Instance.new("TextLabel"); goldenLbl.Text="Golden"; goldenLbl.TextSize=11; goldenLbl.Font=Enum.Font.Gotham; goldenLbl.TextColor3=C.Sub; goldenLbl.BackgroundTransparency=1; goldenLbl.Position=UDim2.new(0.48,14,0,0); goldenLbl.Size=UDim2.new(0,55,1,0); goldenLbl.TextXAlignment=Enum.TextXAlignment.Left; goldenLbl.Parent=typeRow
+    local _,getGolden,_,setGolden=Toggle(typeRow,UDim2.new(0.48,68,0.5,-11),false)
+
+    -- Shiny row
+    local shinyRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,258),C.Panel,0); shinyRow.BackgroundTransparency=1
+    local shinyDot=Frame(shinyRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(255,130,230),5)
+    local shinyLbl=Instance.new("TextLabel"); shinyLbl.Text="Shiny"; shinyLbl.TextSize=11; shinyLbl.Font=Enum.Font.Gotham; shinyLbl.TextColor3=C.Sub; shinyLbl.BackgroundTransparency=1; shinyLbl.Position=UDim2.new(0,14,0,0); shinyLbl.Size=UDim2.new(0,45,1,0); shinyLbl.TextXAlignment=Enum.TextXAlignment.Left; shinyLbl.Parent=shinyRow
+    local _,getShiny,_,setShiny=Toggle(shinyRow,UDim2.new(0,58,0.5,-11),false)
+    -- AllTypes toggle beside shiny
+    local allTypesLbl=Instance.new("TextLabel"); allTypesLbl.Text="All Types"; allTypesLbl.TextSize=11; allTypesLbl.Font=Enum.Font.Gotham; allTypesLbl.TextColor3=C.Sub; allTypesLbl.BackgroundTransparency=1; allTypesLbl.Position=UDim2.new(0.48,0,0,0); allTypesLbl.Size=UDim2.new(0,60,1,0); allTypesLbl.TextXAlignment=Enum.TextXAlignment.Left; allTypesLbl.Parent=shinyRow
+    local _,getAllTypes,_,setAllTypes=Toggle(shinyRow,UDim2.new(0.48,64,0.5,-11),false)
+
     -- Priority toggle
-    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,208),C.Panel,0); prioRow.BackgroundTransparency=1
+    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,290),C.Panel,0); prioRow.BackgroundTransparency=1
     Label(prioRow,"Priority (list first)",12,C.Text,Enum.Font.Gotham)
     local _,getPrio,_,setPrio=Toggle(prioRow,UDim2.new(1,-46,0.5,-11),false)
 
-    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,34),UDim2.new(0,8,0,240),C.Accent)
-    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,280); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
+    -- Quick-add: All Huges button
+    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,322),Color3.fromRGB(40,30,10),C.Yellow)
+    quickBtn.TextSize=11
+
+    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,354),C.Accent)
+    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,392); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
+
+    local function DoAddItem(name, price, amt, cls, prio, rainbow, golden, shiny, allTypes)
+        if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
+        -- Build unique key including type so e.g. "Rainbow Huge Cat" and "Huge Cat" can both exist
+        local typePrefix = (shiny and "Shiny " or "")..(rainbow and "Rainbow " or "")..(golden and "Golden " or "")
+        local displayKey = typePrefix..name
+        if SellerItemData[displayKey] then statusL.TextColor3=C.Red; statusL.Text="⚠ Already in list"; task.delay(2,function() statusL.Text="" end); return end
+        local priceVal=tonumber(price) or price
+        local item={Name=name, Price=priceVal, Amount=amt, Class=cls, Priority=prio,
+                    Rainbow=rainbow, Golden=golden, Shiny=shiny, AllTypes=allTypes,
+                    _displayKey=displayKey}
+        SellerItemData[displayKey]=item
+        local typeStr=(allTypes and "all-types" or typePrefix~="" and typePrefix:gsub(" $","") or "normal")
+        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "").." · "..typeStr..(prio and " ⚡" or "")
+        ItemCard(scroll,displayKey,priceVal,ext,function()
+            SellerItemData[displayKey]=nil
+            local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
+        end)
+        if IsRunning then
+            statusL.TextColor3=C.Yellow; statusL.Text="⚡ Added live — listing next cycle"
+        else
+            statusL.TextColor3=C.Green; statusL.Text="✓ Added: "..displayKey
+        end
+        task.delay(2,function() statusL.Text="" end)
+        local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
+    end
 
     addBtn.MouseButton1Click:Connect(function()
         local name=nameIn.Text:match("^%s*(.-)%s*$")
         local price=priceIn.Text:match("^%s*(.-)%s*$")
-        if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
-        if SellerItemData[name] then statusL.TextColor3=C.Red; statusL.Text="⚠ Already in list"; task.delay(2,function() statusL.Text="" end); return end
-        local priceVal=tonumber(price) or price
         local amt=amtIn.Text~="" and tonumber(amtIn.Text) or nil
         local cls=classIn.Text~="" and classIn.Text or nil
-        local prio=getPrio()
-        local item={Name=name,Price=priceVal,Amount=amt,Class=cls,Priority=prio}
-        SellerItemData[name]=item
-        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "")..(prio and " ⚡" or "")
-        ItemCard(scroll,name,priceVal,ext,function()
-            SellerItemData[name]=nil
-            local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
-        end)
-        nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""; setPrio(false)
-        if IsRunning then
-            statusL.TextColor3=C.Yellow; statusL.Text="⚡ Added live — will list next cycle"
-        else
-            statusL.TextColor3=C.Green; statusL.Text="✓ Added"
-        end
+        DoAddItem(name,price,amt,cls,getPrio(),getRainbow(),getGolden(),getShiny(),getAllTypes())
+        nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""
+        setRainbow(false); setGolden(false); setShiny(false); setAllTypes(false); setPrio(false)
+    end)
+
+    -- Quick-add All Huges
+    quickBtn.MouseButton1Click:Connect(function()
+        DoAddItem("All Huges","+20%",nil,nil,false,false,false,false,true)
+        statusL.TextColor3=C.Yellow; statusL.Text="⚡ All Huges added at +20% RAP"
         task.delay(2,function() statusL.Text="" end)
-        local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
     end)
 end
 
@@ -899,7 +964,7 @@ local function RunSeller()
                 local id=ItemList[Class]
                 local ItemData=id and id[it.id]
                 if not ItemData and id then for _,v in next,id do if v.ID==it.id then ItemData=v; break end end end
-                if ItemData then task.wait(0.5); SellerWebhook({ID=it.id,Name=ItemData.Display,Amount=it._am or 1,Spent=cost,Class=Class}) end
+                if ItemData then task.wait(0.5); SellerWebhook({ID=it.id,Name=ItemData.Display,Amount=it._am or 1,Spent=cost,Class=Class,Icon=ItemData.Icon}) end
             end
         end
     end)
@@ -911,7 +976,14 @@ local function RunSeller()
         local usedSlots = FindItemsInBooth() or 0
         if usedSlots >= maxSlots then return end
 
-        local FindInfo = GenerateFindInfo(name, data)
+        -- Build the lookup name including type prefix (Rainbow/Golden/Shiny)
+        local lookupName = name
+        if not data.AllTypes then
+            if data.Shiny   then lookupName = "Shiny "..lookupName end
+            if data.Rainbow then lookupName = "Rainbow "..lookupName end
+            if data.Golden  then lookupName = "Golden "..lookupName end
+        end
+        local FindInfo = GenerateFindInfo(lookupName, data)
         local UID, ItemData = FindItem(FindInfo)
         if not UID then return end
 
