@@ -904,74 +904,106 @@ local function RunSeller()
         end
     end)
 
-    -- Main listing loop
-    local function ProcessSellerItem(name,data)
-        local FindInfo=GenerateFindInfo(name,data)
-        local usedSlots=FindItemsInBooth()
-        local maxSlots=PlayerSave.Get().BoothSlots or 8
-        repeat task.wait()
+    -- Single flat listing function — lists ONE slot for ONE item then returns
+    -- so the outer loop can immediately check for newly added items
+    local function TryListItem(name, data)
+        local maxSlots = PlayerSave.Get().BoothSlots or 8
+        local usedSlots = FindItemsInBooth() or 0
+        if usedSlots >= maxSlots then return end
+
+        local FindInfo = GenerateFindInfo(name, data)
+        local UID, ItemData = FindItem(FindInfo)
+        if not UID then return end
+
+        local Amount = ItemData.Amount or 1
+        local PD = {
+            IsPercentage = type(data.Price)=="string" and data.Price:find("%%"),
+            AboveRAP     = type(data.Price)=="string" and data.Price:find("+"),
+            NegativePrice= (type(data.Price)=="number" and data.Price<0) or (type(data.Price)=="string" and data.Price:find("^%-")),
+        }
+        PD.RealPrice = tonumber(type(data.Price)=="string" and (not PD.IsPercentage and RemoveSuffix(data.Price) or data.Price:gsub("%D","")) or data.Price)
+
+        if PD.IsPercentage or PD.AboveRAP or PD.NegativePrice then
+            local NI = Library.Items.Types[ItemData.Class](ItemData.ID)
+            if ItemData.Golden  then NI:SetGolden() end
+            if ItemData.Rainbow then NI:SetRainbow() end
+            if ItemData.Shiny   then NI:SetShiny(true) end
+            if ItemData.Tier    then NI:SetTier(ItemData.Tier) end
+            local RAP = (table.find({PS99.Normal,PS99.Pro},game.PlaceId) and NI.GetDevRAP and NI:GetDevRAP()) or NI.GetRAP and NI:GetRAP()
+            if not RAP then BlacklistedUIDs[UID]=true; return end
+            if PD.NegativePrice then PD.RealPrice = RAP + PD.RealPrice end
+            if PD.IsPercentage or PD.AboveRAP then
+                PD.RealPrice = PD.AboveRAP and RAP+(RAP*(PD.RealPrice/100)) or RAP-(RAP*(PD.RealPrice/100))
+            end
+        end
+
+        if not PD.RealPrice or PD.RealPrice <= 0 then
+            warn("[Plaza Plus]: Invalid price for "..name); return
+        end
+
+        if data.Amount then Amount = math.min(Amount, data.Amount) end
+        local MaxAmount = 50000
+        if PD.RealPrice * Amount >= RemoveSuffix("100b") then
+            Amount = math.floor(RemoveSuffix("100b") / PD.RealPrice)
+        end
+
+        local _, itemSlots = FindItemsInBooth(FindInfo.ID, FindInfo.Class)
+        if data.Amount and itemSlots and itemSlots >= data.Amount then return end
+        if Amount <= 0 then return end
+
+        print("[Plaza Plus]: Listing "..name.." × "..Amount.." for "..tostring(PD.RealPrice))
+        task.wait(math.random(2, 5))
+
+        local fails = 0
+        while Amount > 0 and (FindItemsInBooth() or 0) < maxSlots do
             if not SellerRunning then break end
-            usedSlots=FindItemsInBooth() or 0
-            if usedSlots>=maxSlots then break end
-            local UID,ItemData=FindItem(FindInfo)
-            if not UID then break end
-            local Amount=ItemData.Amount or 1
-            local PD={
-                IsPercentage=type(data.Price)=="string" and data.Price:find("%%"),
-                AboveRAP=type(data.Price)=="string" and data.Price:find("+"),
-                NegativePrice=(type(data.Price)=="number" and data.Price<0) or (type(data.Price)=="string" and data.Price:find("^%-")),
-            }
-            PD.RealPrice=tonumber(type(data.Price)=="string" and (not PD.IsPercentage and RemoveSuffix(data.Price) or data.Price:gsub("%D","")) or data.Price)
-            if PD.IsPercentage or PD.AboveRAP or PD.NegativePrice then
-                local NI=Library.Items.Types[ItemData.Class](ItemData.ID)
-                if ItemData.Golden then NI:SetGolden() end
-                if ItemData.Rainbow then NI:SetRainbow() end
-                if ItemData.Shiny then NI:SetShiny(true) end
-                if ItemData.Tier then NI:SetTier(ItemData.Tier) end
-                local RAP=(table.find({PS99.Normal,PS99.Pro},game.PlaceId) and NI.GetDevRAP and NI:GetDevRAP()) or NI.GetRAP and NI:GetRAP()
-                if not RAP then BlacklistedUIDs[UID]=true; continue end
-                if PD.NegativePrice then PD.RealPrice=RAP+PD.RealPrice end
-                if PD.IsPercentage then PD.RealPrice=PD.AboveRAP and RAP+(RAP*(PD.RealPrice/100)) or RAP-(RAP*(PD.RealPrice/100)) end
+            local t2 = os.time()
+            local ok = Library.Network.Invoke("Booths_CreateListing", UID, math.floor(PD.RealPrice), math.min(Amount, MaxAmount))
+            repeat task.wait() until ok or (os.time()-t2) >= 10
+            if ok then
+                warn("[Plaza Plus]: Listed "..name.." × "..math.min(Amount,MaxAmount))
+                Amount = Amount - MaxAmount
+            else
+                fails = fails + 1
+                table.remove(LastUIDs, table.find(LastUIDs, UID))
+                warn("[Plaza Plus]: FAILED listing "..name)
             end
-            if not PD.RealPrice or PD.RealPrice<=0 then warn("[Plaza Plus]: Invalid price for "..name); break end
-            if data.Amount then Amount=math.min(Amount,data.Amount) end
-            local MaxAmount=50000
-            if PD.RealPrice*Amount>=RemoveSuffix("100b") then Amount=math.floor(RemoveSuffix("100b")/PD.RealPrice) end
-            local _,itemSlots=FindItemsInBooth(FindInfo.ID,FindInfo.Class)
-            if data.Amount and itemSlots and itemSlots>=data.Amount then return end
-            print("[Plaza Plus]: Listing "..name.." × "..Amount.." for "..tostring(PD.RealPrice))
-            task.wait(math.random(3,7))
-            local fails=0
-            while Amount>0 and (FindItemsInBooth() or 0)<maxSlots do
-                local t2=os.time()
-                local ok=Library.Network.Invoke("Booths_CreateListing",UID,math.floor(PD.RealPrice),math.min(Amount,MaxAmount))
-                repeat task.wait() until ok or (os.time()-t2)>=10
-                if ok then warn("[Plaza Plus]: Listed "..name.." × "..math.min(Amount,MaxAmount)); Amount=Amount-MaxAmount
-                else fails=fails+1; table.remove(LastUIDs,table.find(LastUIDs,UID)); warn("[Plaza Plus]: FAILED listing "..name) end
-                if fails>=3 then break end
-            end
-        until (FindItemsInBooth() or 0)>=maxSlots
+            if fails >= 3 then break end
+        end
     end
 
-    SellerThread=task.spawn(function()
+    SellerThread = task.spawn(function()
         while SellerRunning do
-            -- Rebuild ordered list every cycle — picks up items added live via GUI
-            local priority, normal = {}, {}
-            for _, item in pairs(Cfg.SellerItems or {}) do
-                if item.Priority then table.insert(priority, item) else table.insert(normal, item) end
-            end
-            local ordered = {}
-            for _,v in ipairs(priority) do table.insert(ordered, v) end
-            for _,v in ipairs(normal)   do table.insert(ordered, v) end
+            local maxSlots = PlayerSave.Get().BoothSlots or 8
+            local usedSlots = FindItemsInBooth() or 0
 
-            for _, item in ipairs(ordered) do
-                if not SellerRunning then break end
-                ProcessSellerItem(item.Name, item)
+            if usedSlots < maxSlots then
+                -- Rebuild list fresh every tick — new items added via GUI are picked up instantly
+                local priority, normal = {}, {}
+                for _, item in pairs(Cfg.SellerItems or {}) do
+                    if item.Priority then table.insert(priority, item)
+                    else table.insert(normal, item) end
+                end
+
+                -- Process priority items first, then normal
+                for _, item in ipairs(priority) do
+                    if not SellerRunning then break end
+                    TryListItem(item.Name, item)
+                end
+                for _, item in ipairs(normal) do
+                    if not SellerRunning then break end
+                    TryListItem(item.Name, item)
+                end
+            else
+                -- Booth full — just wait and recheck
+                task.wait(5)
             end
-            if Cfg.SwitchServers and Cfg.Delay and (os.time()-StartingTime)>=(Cfg.Delay*60) then
+
+            if Cfg.SwitchServers and Cfg.Delay and (os.time()-StartingTime) >= (Cfg.Delay*60) then
                 warn("[Plaza Plus]: Switch servers triggered")
                 GrabIDs(); Serverhop()
             end
+
             task.wait(1)
         end
     end)
