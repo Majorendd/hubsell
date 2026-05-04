@@ -1412,11 +1412,19 @@ local function RunSniper()
             local placeOk = table.find({PS99.Normal, PS99.Pro}, FoundServer["place_id"])
             if placeOk then
                 if not Cfg.OnlyPro or FoundServer["place_id"] == PS99.Pro then
-                    warn("[Plaza Plus Terminal]: Found server for "..itemID.." — teleporting...")
+                    warn("[Plaza Plus Terminal]: ✓ Found server for "..itemID.." — teleporting...")
                     table.insert(TerminalServers, {PlaceID=FoundServer["place_id"], JobID=FoundServer["job_id"], Item=item})
                 end
             end
             return
+        elseif FoundServer == false then
+            warn("[Plaza Plus Terminal]: No listings found for "..itemID.." anywhere")
+            return
+        elseif FoundServer == nil then
+            -- InvokeServer returned nil — likely means popup was shown instead
+            -- Watch for Yes button
+        else
+            warn("[Plaza Plus Terminal]: Unexpected response for "..itemID..": "..tostring(FoundServer))
         end
 
         -- Watch for the Yes popup and auto-click it
@@ -1467,8 +1475,30 @@ local function RunSniper()
                     if have >= item.InventoryLimit then continue end
                 end
 
-                -- Use exact internal class and ID — same as what the game sends
-                SearchTerminal(FI.ID or item.Name, FI.Class, item, FI.Tier)
+                -- Remap class names to what TradingTerminal_Search actually expects
+                -- Confirmed by spy: game sends "Misc" not "Items"
+                local terminalClass = ({
+                    ["Misc"]     = "Misc",
+                    ["Items"]    = "Misc",
+                    ["Pet"]      = "Pet",
+                    ["Pets"]     = "Pet",
+                    ["Card"]     = "Card",
+                    ["Cards"]    = "Card",
+                    ["Potion"]   = "Potion",
+                    ["Potions"]  = "Potion",
+                    ["Enchant"]  = "Enchant",
+                    ["Enchants"] = "Enchant",
+                    ["Ultimate"] = "Ultimate",
+                    ["Egg"]      = "Egg",
+                    ["Eggs"]     = "Egg",
+                    ["Hoverboard"] = "Hoverboard",
+                    ["Charm"]    = "Charm",
+                    ["Box"]      = "Misc",
+                    ["Lootbox"]  = "Misc",
+                    ["Fruit"]    = "Misc",
+                })[FI.Class] or FI.Class
+
+                SearchTerminal(FI.ID or item.Name, terminalClass, item, FI.Tier)
                 task.wait(2)
             end
 
