@@ -1506,10 +1506,8 @@ local function RunSniper()
                 local target = table.remove(TerminalServers, 1)
                 if target and target.JobID ~= game.JobId then
                     DisableAntiScam()
-                    local opts = Instance.new("TeleportOptions")
-                    opts.ServerJobId = target.JobID
                     local tok, terr = pcall(function()
-                        TeleportService:TeleportAsync(target.PlaceID, {LocalPlayer}, opts)
+                        TeleportService:TeleportToPlaceInstance(target.PlaceID, target.JobID, LocalPlayer)
                     end)
                     if not tok then
                         warn("[Plaza Plus Terminal]: Teleport failed: "..tostring(terr))
