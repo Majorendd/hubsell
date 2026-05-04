@@ -427,9 +427,7 @@ local function Serverhop()
         table.insert(Cfg.LastServers,S.JobID)
         SaveCfg()
         DisableAntiScam()
-        local opts=Instance.new("TeleportOptions")
-        opts.ServerJobId=S.JobID
-        local ok,err=pcall(function() TeleportService:TeleportAsync(S.PlaceID,{LocalPlayer},opts) end)
+        local ok,err=pcall(function() TeleportService:TeleportToPlaceInstance(S.PlaceID, S.JobID, LocalPlayer) end)
         if not ok then warn("[Plaza Plus]: Teleport failed: "..tostring(err)); task.wait(3); continue end
         task.wait(1.5)
     end
