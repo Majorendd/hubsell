@@ -730,10 +730,12 @@ do
     local amtIn=Input(SRight,"blank = max available",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,124))
     FLabel(SRight,"Class  (Misc, Pet … blank=auto)",158)
     local classIn=Input(SRight,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
+    FLabel(SRight,"Tier  (for potions/tiered items)",208)
+    local tierIn=Input(SRight,"e.g. 2  (blank = any tier)",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224))
 
     -- Type row: Rainbow / Golden / Shiny toggles
-    FLabel(SRight,"Pet Type",208)
-    local typeRow=Frame(SRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224),C.Panel,0); typeRow.BackgroundTransparency=1
+    FLabel(SRight,"Pet Type",258)
+    local typeRow=Frame(SRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,274),C.Panel,0); typeRow.BackgroundTransparency=1
     -- Rainbow
     local rainbowDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(99,200,255),5)
     local rainbowLbl=Instance.new("TextLabel"); rainbowLbl.Text="Rainbow"; rainbowLbl.TextSize=11; rainbowLbl.Font=Enum.Font.Gotham; rainbowLbl.TextColor3=C.Sub; rainbowLbl.BackgroundTransparency=1; rainbowLbl.Position=UDim2.new(0,14,0,0); rainbowLbl.Size=UDim2.new(0,60,1,0); rainbowLbl.TextXAlignment=Enum.TextXAlignment.Left; rainbowLbl.Parent=typeRow
@@ -744,39 +746,37 @@ do
     local _,getGolden,_,setGolden=Toggle(typeRow,UDim2.new(0.48,68,0.5,-11),false)
 
     -- Shiny row
-    local shinyRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,258),C.Panel,0); shinyRow.BackgroundTransparency=1
+    local shinyRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,308),C.Panel,0); shinyRow.BackgroundTransparency=1
     local shinyDot=Frame(shinyRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(255,130,230),5)
     local shinyLbl=Instance.new("TextLabel"); shinyLbl.Text="Shiny"; shinyLbl.TextSize=11; shinyLbl.Font=Enum.Font.Gotham; shinyLbl.TextColor3=C.Sub; shinyLbl.BackgroundTransparency=1; shinyLbl.Position=UDim2.new(0,14,0,0); shinyLbl.Size=UDim2.new(0,45,1,0); shinyLbl.TextXAlignment=Enum.TextXAlignment.Left; shinyLbl.Parent=shinyRow
     local _,getShiny,_,setShiny=Toggle(shinyRow,UDim2.new(0,58,0.5,-11),false)
-    -- AllTypes toggle beside shiny
     local allTypesLbl=Instance.new("TextLabel"); allTypesLbl.Text="All Types"; allTypesLbl.TextSize=11; allTypesLbl.Font=Enum.Font.Gotham; allTypesLbl.TextColor3=C.Sub; allTypesLbl.BackgroundTransparency=1; allTypesLbl.Position=UDim2.new(0.48,0,0,0); allTypesLbl.Size=UDim2.new(0,60,1,0); allTypesLbl.TextXAlignment=Enum.TextXAlignment.Left; allTypesLbl.Parent=shinyRow
     local _,getAllTypes,_,setAllTypes=Toggle(shinyRow,UDim2.new(0.48,64,0.5,-11),false)
 
     -- Priority toggle
-    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,290),C.Panel,0); prioRow.BackgroundTransparency=1
+    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,340),C.Panel,0); prioRow.BackgroundTransparency=1
     Label(prioRow,"Priority (list first)",12,C.Text,Enum.Font.Gotham)
     local _,getPrio,_,setPrio=Toggle(prioRow,UDim2.new(1,-46,0.5,-11),false)
 
     -- Quick-add: All Huges button
-    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,322),Color3.fromRGB(40,30,10),C.Yellow)
+    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,372),Color3.fromRGB(40,30,10),C.Yellow)
     quickBtn.TextSize=11
 
-    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,354),C.Accent)
-    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,392); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
+    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,404),C.Accent)
+    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,442); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
 
-    local function DoAddItem(name, price, amt, cls, prio, rainbow, golden, shiny, allTypes)
+    local function DoAddItem(name, price, amt, cls, tier, prio, rainbow, golden, shiny, allTypes)
         if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
-        -- Build unique key including type so e.g. "Rainbow Huge Cat" and "Huge Cat" can both exist
         local typePrefix = (shiny and "Shiny " or "")..(rainbow and "Rainbow " or "")..(golden and "Golden " or "")
-        local displayKey = typePrefix..name
+        local displayKey = typePrefix..name..(tier and " T"..tier or "")
         if SellerItemData[displayKey] then statusL.TextColor3=C.Red; statusL.Text="⚠ Already in list"; task.delay(2,function() statusL.Text="" end); return end
         local priceVal=tonumber(price) or price
-        local item={Name=name, Price=priceVal, Amount=amt, Class=cls, Priority=prio,
+        local item={Name=name, Price=priceVal, Amount=amt, Class=cls, Tier=tier, Priority=prio,
                     Rainbow=rainbow, Golden=golden, Shiny=shiny, AllTypes=allTypes,
                     _displayKey=displayKey}
         SellerItemData[displayKey]=item
         local typeStr=(allTypes and "all-types" or typePrefix~="" and typePrefix:gsub(" $","") or "normal")
-        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "").." · "..typeStr..(prio and " ⚡" or "")
+        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "")..(tier and " T"..tier or "").." · "..typeStr..(prio and " ⚡" or "")
         ItemCard(scroll,displayKey,priceVal,ext,function()
             SellerItemData[displayKey]=nil
             local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
@@ -795,14 +795,15 @@ do
         local price=priceIn.Text:match("^%s*(.-)%s*$")
         local amt=amtIn.Text~="" and tonumber(amtIn.Text) or nil
         local cls=classIn.Text~="" and classIn.Text or nil
-        DoAddItem(name,price,amt,cls,getPrio(),getRainbow(),getGolden(),getShiny(),getAllTypes())
-        nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""
+        local tier=tierIn.Text~="" and tonumber(tierIn.Text) or nil
+        DoAddItem(name,price,amt,cls,tier,getPrio(),getRainbow(),getGolden(),getShiny(),getAllTypes())
+        nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""; tierIn.Text=""
         setRainbow(false); setGolden(false); setShiny(false); setAllTypes(false); setPrio(false)
     end)
 
     -- Quick-add All Huges
     quickBtn.MouseButton1Click:Connect(function()
-        DoAddItem("All Huges","+20%",nil,nil,false,false,false,false,true)
+        DoAddItem("All Huges","+20%",nil,nil,nil,false,false,false,false,true)
         statusL.TextColor3=C.Yellow; statusL.Text="⚡ All Huges added at +20% RAP"
         task.delay(2,function() statusL.Text="" end)
     end)
@@ -1115,12 +1116,16 @@ local function RunSeller()
         local usedSlots = FindItemsInBooth() or 0
         if usedSlots >= maxSlots then return end
 
-        -- Build the lookup name including type prefix (Rainbow/Golden/Shiny)
+        -- Build the lookup name including type prefix and tier
         local lookupName = name
         if not data.AllTypes then
             if data.Shiny   then lookupName = "Shiny "..lookupName end
             if data.Rainbow then lookupName = "Rainbow "..lookupName end
             if data.Golden  then lookupName = "Golden "..lookupName end
+        end
+        -- Append tier as Roman numeral if specified (e.g. "Treasure Hunter II")
+        if data.Tier then
+            lookupName = lookupName .. " " .. ToRoman(data.Tier)
         end
         local FindInfo = GenerateFindInfo(lookupName, data)
         local UID, ItemData = FindItem(FindInfo)
@@ -1232,7 +1237,13 @@ local function RunSniper()
     -- Print what we're sniping
     warn("[Plaza Plus]: Sniper started. Watching for:")
     for _,item in pairs(Cfg.SniperItems or {}) do
-        warn("  → "..tostring(item.Name).." at price: "..tostring(item.Price))
+        warn("  [Booth] "..tostring(item.Name).." at price: "..tostring(item.Price))
+    end
+    for _,item in pairs(Cfg.TerminalItems or {}) do
+        warn("  [Terminal] "..tostring(item.Name).." at price: "..tostring(item.Price))
+    end
+    if #(Cfg.TerminalItems or {})==0 and #(Cfg.SniperItems or {})==0 then
+        warn("  (no items configured — add items in the Sniper tab)")
     end
 
     -- FindInfo cache — rebuilt each cycle so newly added snipe targets work live
@@ -1380,11 +1391,17 @@ local function RunSniper()
         ["Charms"]    = "Charms",
     }
 
-    local function SearchTerminal(itemName, itemClass, item)
-        -- Exact same call the game makes (confirmed by spy):
+    local function SearchTerminal(itemID, itemClass, item, tier)
+        -- Exact format confirmed by spy:
         -- InvokeServer: TradingTerminal_Search | [1] Misc | [2] {"id":"Mini Chest"}
-        local Encoded = '{"id":"'..itemName..'"}'
-        warn("[Plaza Plus Terminal]: Searching "..itemClass.." for: "..itemName)
+        -- With tier: {"id":"Treasure Hunter","tn":2}
+        local Encoded
+        if tier then
+            Encoded = '{"id":"'..itemID..'","tn":'..tostring(tier)..'}'
+        else
+            Encoded = '{"id":"'..itemID..'"}'
+        end
+        warn("[Plaza Plus Terminal]: Searching "..itemClass.." for: "..itemID..(tier and " tier "..tier or ""))
 
         local FoundServer
         pcall(function()
@@ -1395,7 +1412,7 @@ local function RunSniper()
             local placeOk = table.find({PS99.Normal, PS99.Pro}, FoundServer["place_id"])
             if placeOk then
                 if not Cfg.OnlyPro or FoundServer["place_id"] == PS99.Pro then
-                    warn("[Plaza Plus Terminal]: Found server for "..itemName.." — teleporting...")
+                    warn("[Plaza Plus Terminal]: Found server for "..itemID.." — teleporting...")
                     table.insert(TerminalServers, {PlaceID=FoundServer["place_id"], JobID=FoundServer["job_id"], Item=item})
                 end
             end
@@ -1411,7 +1428,7 @@ local function RunSniper()
                     if obj:IsA("TextButton") and obj.Visible then
                         local ok, txt = pcall(function() return obj.Text:lower() end)
                         if ok and (txt == "yes" or txt == "yes!") then
-                            warn("[Plaza Plus Terminal]: Auto-clicking Yes for "..itemName)
+                            warn("[Plaza Plus Terminal]: Auto-clicking Yes for "..itemID)
                             pcall(function() firebutton(obj) end)
                             return
                         end
@@ -1451,7 +1468,7 @@ local function RunSniper()
                 end
 
                 -- Use exact internal class and ID — same as what the game sends
-                SearchTerminal(FI.ID or item.Name, FI.Class, item)
+                SearchTerminal(FI.ID or item.Name, FI.Class, item, FI.Tier)
                 task.wait(2)
             end
 
