@@ -792,7 +792,7 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,700,0,560),UDim2.new(0.5,-350,0.5,-280),C.BG,18)
+local Win=Frame(ScreenGui,UDim2.new(0,760,0,620),UDim2.new(0.5,-380,0.5,-310),C.BG,18)
 Win.ClipsDescendants=true
 do
     local bg=Instance.new("UIGradient")
@@ -852,7 +852,7 @@ do
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,700,0,64) or UDim2.new(0,700,0,560)},0.2)
+        Tw(Win,{Size=minimized and UDim2.new(0,760,0,64) or UDim2.new(0,760,0,620)},0.2)
     end)
     task.spawn(function()
         while task.wait(1) do
@@ -869,7 +869,14 @@ end
 
 -- Tab row
 local TabRow=Frame(Win,UDim2.new(1,0,0,44),UDim2.new(0,0,0,64),Color3.fromRGB(17,20,34),0)
-local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),Color3.fromRGB(42,47,79),0)
+local TabRowGradient=Instance.new("UIGradient")
+TabRowGradient.Color=ColorSequence.new({
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(19,22,36)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(17,20,34)),
+})
+TabRowGradient.Rotation=90
+TabRowGradient.Parent=TabRow
+local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),Color3.fromRGB(46,51,84),0)
 
 local function MakeTabBtn(text,xOff,active)
     local t=Instance.new("TextButton")
@@ -898,7 +905,7 @@ end)
 local CfgTab=MakeTabBtn("⚙  Settings",246,false)
 
 -- Content host
-local ContentArea=Frame(Win,UDim2.new(1,-20,1,-156),UDim2.new(0,10,0,108),C.BG,0)
+local ContentArea=Frame(Win,UDim2.new(1,-20,1,-176),UDim2.new(0,10,0,118),C.BG,0)
 ContentArea.BackgroundTransparency=1
 
 -- ── Panels ───────────────────────────────
@@ -920,11 +927,14 @@ SelTab.MouseButton1Click:Connect(function() SwitchTab(SelPanel,SelTab) end)
 SniTab.MouseButton1Click:Connect(function() SwitchTab(SniPanel,SniTab) end)
 -- Replace sniper panel with Coming Soon screen
 do
-    local cs=Frame(SniPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,12)
+    local cs=Frame(SniPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,18)
+    cs.ZIndex=50
+    cs.ClipsDescendants=true
+    Stroke(cs,Color3.fromRGB(76,81,122),1)
     -- Lock icon
-    local lockL=Instance.new("TextLabel"); lockL.Text="🔒"; lockL.TextSize=48; lockL.Font=Enum.Font.GothamBold; lockL.TextColor3=C.Sub; lockL.BackgroundTransparency=1; lockL.Position=UDim2.new(0,0,0.2,0); lockL.Size=UDim2.new(1,0,0,60); lockL.TextXAlignment=Enum.TextXAlignment.Center; lockL.Parent=cs
-    local titleL=Instance.new("TextLabel"); titleL.Text="COMING SOON"; titleL.TextSize=22; titleL.Font=Enum.Font.GothamBold; titleL.TextColor3=C.Text; titleL.BackgroundTransparency=1; titleL.Position=UDim2.new(0,0,0.42,0); titleL.Size=UDim2.new(1,0,0,30); titleL.TextXAlignment=Enum.TextXAlignment.Center; titleL.Parent=cs
-    local subL=Instance.new("TextLabel"); subL.Text="Sniper is currently under development\nand will be available in a future update."; subL.TextSize=13; subL.Font=Enum.Font.Gotham; subL.TextColor3=C.Sub; subL.BackgroundTransparency=1; subL.Position=UDim2.new(0,20,0.55,0); subL.Size=UDim2.new(1,-40,0,50); subL.TextXAlignment=Enum.TextXAlignment.Center; subL.TextWrapped=true; subL.Parent=cs
+    local lockL=Instance.new("TextLabel"); lockL.Text="🔒"; lockL.TextSize=56; lockL.Font=Enum.Font.GothamBold; lockL.TextColor3=C.Accent; lockL.BackgroundTransparency=1; lockL.Position=UDim2.new(0,0,0.18,0); lockL.Size=UDim2.new(1,0,0,72); lockL.TextXAlignment=Enum.TextXAlignment.Center; lockL.Parent=cs
+    local titleL=Instance.new("TextLabel"); titleL.Text="COMING SOON"; titleL.TextSize=24; titleL.Font=Enum.Font.GothamBold; titleL.TextColor3=C.Text; titleL.BackgroundTransparency=1; titleL.Position=UDim2.new(0,0,0.43,0); titleL.Size=UDim2.new(1,0,0,32); titleL.TextXAlignment=Enum.TextXAlignment.Center; titleL.Parent=cs
+    local subL=Instance.new("TextLabel"); subL.Text="Sniper is currently under development and will be available in a future update."; subL.TextSize=13; subL.Font=Enum.Font.Gotham; subL.TextColor3=C.Sub; subL.BackgroundTransparency=1; subL.Position=UDim2.new(0,20,0.58,0); subL.Size=UDim2.new(1,-40,0,50); subL.TextXAlignment=Enum.TextXAlignment.Center; subL.TextWrapped=true; subL.Parent=cs
     -- Animated dots
     task.spawn(function()
         local dots={"", ".", "..", "..."}
@@ -1035,20 +1045,20 @@ do
 
     -- Add form (right)
     local function FLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,14),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
-    FLabel(SRight,"Item Name",8)
-    local nameIn=Input(SRight,"e.g. Spring Bluebell Token",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,24))
-    FLabel(SRight,"Price  (2 · 1m · +20% · -5%)",58)
-    local priceIn=Input(SRight,"e.g. 2  or  1m  or  +20%",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,74))
-    FLabel(SRight,"Amount  (blank = sell all)",108)
-    local amtIn=Input(SRight,"blank = max available",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,124))
-    FLabel(SRight,"Class  (Misc, Pet … blank=auto)",158)
-    local classIn=Input(SRight,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
-    FLabel(SRight,"Tier  (for potions/tiered items)",208)
-    local tierIn=Input(SRight,"e.g. 2  (blank = any tier)",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224))
+    FLabel(SRightScroll,"Item Name",8)
+    local nameIn=Input(SRightScroll,"e.g. Spring Bluebell Token",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,24))
+    FLabel(SRightScroll,"Price  (2 · 1m · +20% · -5%)",58)
+    local priceIn=Input(SRightScroll,"e.g. 2  or  1m  or  +20%",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,74))
+    FLabel(SRightScroll,"Amount  (blank = sell all)",108)
+    local amtIn=Input(SRightScroll,"blank = max available",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,124))
+    FLabel(SRightScroll,"Class  (Misc, Pet … blank=auto)",158)
+    local classIn=Input(SRightScroll,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
+    FLabel(SRightScroll,"Tier  (for potions/tiered items)",208)
+    local tierIn=Input(SRightScroll,"e.g. 2  (blank = any tier)",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224))
 
     -- Type row: Rainbow / Golden / Shiny toggles
-    FLabel(SRight,"Pet Type",258)
-    local typeRow=Frame(SRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,274),C.Panel,0); typeRow.BackgroundTransparency=1
+    FLabel(SRightScroll,"Pet Type",258)
+    local typeRow=Frame(SRightScroll,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,274),C.Panel,0); typeRow.BackgroundTransparency=1
     -- Rainbow
     local rainbowDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(99,200,255),5)
     local rainbowLbl=Instance.new("TextLabel"); rainbowLbl.Text="Rainbow"; rainbowLbl.TextSize=11; rainbowLbl.Font=Enum.Font.Gotham; rainbowLbl.TextColor3=C.Sub; rainbowLbl.BackgroundTransparency=1; rainbowLbl.Position=UDim2.new(0,14,0,0); rainbowLbl.Size=UDim2.new(0,60,1,0); rainbowLbl.TextXAlignment=Enum.TextXAlignment.Left; rainbowLbl.Parent=typeRow
@@ -1059,7 +1069,7 @@ do
     local _,getGolden,_,setGolden=Toggle(typeRow,UDim2.new(0.48,68,0.5,-11),false)
 
     -- Shiny row
-    local shinyRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,308),C.Panel,0); shinyRow.BackgroundTransparency=1
+    local shinyRow=Frame(SRightScroll,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,308),C.Panel,0); shinyRow.BackgroundTransparency=1
     local shinyDot=Frame(shinyRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(255,130,230),5)
     local shinyLbl=Instance.new("TextLabel"); shinyLbl.Text="Shiny"; shinyLbl.TextSize=11; shinyLbl.Font=Enum.Font.Gotham; shinyLbl.TextColor3=C.Sub; shinyLbl.BackgroundTransparency=1; shinyLbl.Position=UDim2.new(0,14,0,0); shinyLbl.Size=UDim2.new(0,45,1,0); shinyLbl.TextXAlignment=Enum.TextXAlignment.Left; shinyLbl.Parent=shinyRow
     local _,getShiny,_,setShiny=Toggle(shinyRow,UDim2.new(0,58,0.5,-11),false)
@@ -1067,16 +1077,16 @@ do
     local _,getAllTypes,_,setAllTypes=Toggle(shinyRow,UDim2.new(0.48,64,0.5,-11),false)
 
     -- Priority toggle
-    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,340),C.Panel,0); prioRow.BackgroundTransparency=1
+    local prioRow=Frame(SRightScroll,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,340),C.Panel,0); prioRow.BackgroundTransparency=1
     Label(prioRow,"Priority (list first)",12,C.Text,Enum.Font.Gotham)
     local _,getPrio,_,setPrio=Toggle(prioRow,UDim2.new(1,-46,0.5,-11),false)
 
     -- Quick-add: All Huges button
-    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,372),Color3.fromRGB(40,30,10),C.Yellow)
+    local quickBtn=Btn(SRightScroll,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,372),Color3.fromRGB(40,30,10),C.Yellow)
     quickBtn.TextSize=11
 
-    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,404),C.Accent)
-    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,442); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
+    local addBtn=Btn(SRightScroll,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,404),C.Accent)
+    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,442); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRightScroll
 
     local function DoAddItem(name, price, amt, cls, tier, prio, rainbow, golden, shiny, allTypes)
         if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
@@ -1126,7 +1136,11 @@ end
 --  SNIPER PANEL  (two sub-tabs)
 -- ══════════════════════════════════════════
 local SNLeft=Frame(SniPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
+SNLeft.ZIndex=1
+SNLeft.Visible=false
 local SNRight=Frame(SniPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
+SNRight.ZIndex=1
+SNRight.Visible=false
 
 -- Sub-tab bar inside SNRight
 local subTabBar=Frame(SNRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,6),Color3.fromRGB(20,20,32),6)
