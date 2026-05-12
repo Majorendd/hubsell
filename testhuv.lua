@@ -13,17 +13,17 @@ local function VerifyKey(key)
 
     local HttpService = game:GetService("HttpService")
 
-    -- KeyAuth API details — fill these in from your KeyAuth dashboard
-    local KEYAUTH_NAME    = "PlazaPlus"       -- Application name
-    local KEYAUTH_OWNERID = "Ml4HvNU82d"   -- Your KeyAuth owner ID
-    local KEYAUTH_SECRET  = "008d11bc9d49ef832360277619c494e033e77ecffb08b03d4979525597a9c15f"     -- Your KeyAuth secret
+    local KEYAUTH_NAME    = "PlazaPlus"
+    local KEYAUTH_OWNERID = "Ml4HvNU82d"
+    local KEYAUTH_SECRET  = "008d11bc9d49ef832360277619c494e033e77ecffb08b03d4979525597a9c15f"
     local KEYAUTH_VERSION = "1.0"
 
     -- Step 1: Initialize session
-    local initURL = string.format(
-        "https://keyauth.win/api/1.2/?type=init&name=%s&ownerid=%s&ver=%s",
-        KEYAUTH_NAME, KEYAUTH_OWNERID, KEYAUTH_VERSION
-    )
+    local initURL = "https://keyauth.win/api/1.2/?" .. 
+        "type=init" ..
+        "&name=" .. KEYAUTH_NAME ..
+        "&ownerid=" .. KEYAUTH_OWNERID ..
+        "&ver=" .. KEYAUTH_VERSION
 
     local ok1, initResp = pcall(function()
         return HttpService:JSONDecode(game:HttpGet(initURL))
@@ -34,20 +34,23 @@ local function VerifyKey(key)
     end
 
     if not initResp.sessionid then
-        return false, initResp.message or "Session init failed"
+        local msg = initResp.message or "Session init failed"
+        warn("[Plaza Plus KeyAuth]: Init response: " .. game:HttpGet(initURL))
+        return false, msg
     end
 
     local sessionID = initResp.sessionid
 
-    -- Step 2: Verify license key using session ID
-    local licenseURL = string.format(
-        "https://keyauth.win/api/1.2/?type=license&name=%s&ownerid=%s&key=%s&sessionid=%s",
-        KEYAUTH_NAME, KEYAUTH_OWNERID,
-        HttpService:UrlEncode(key), sessionID
-    )
+    -- Step 2: Verify license
+    local licURL = "https://keyauth.win/api/1.2/?" ..
+        "type=license" ..
+        "&name=" .. KEYAUTH_NAME ..
+        "&ownerid=" .. KEYAUTH_OWNERID ..
+        "&key=" .. HttpService:UrlEncode(key) ..
+        "&sessionid=" .. sessionID
 
     local ok2, licResp = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(licenseURL))
+        return HttpService:JSONDecode(game:HttpGet(licURL))
     end)
 
     if not ok2 or type(licResp) ~= "table" then
