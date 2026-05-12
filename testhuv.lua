@@ -792,7 +792,7 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,760,0,620),UDim2.new(0.5,-380,0.5,-310),C.BG,18)
+local Win=Frame(ScreenGui,UDim2.new(0,720,0,580),UDim2.new(0.5,-360,0.5,-290),C.BG,18)
 Win.ClipsDescendants=true
 do
     local bg=Instance.new("UIGradient")
@@ -846,13 +846,15 @@ do
     dotLabel.Size=UDim2.new(0,70,0,16)
     dotLabel.TextXAlignment=Enum.TextXAlignment.Left
     dotLabel.Parent=TBar
-    local cBtn=Btn(TBar,"✕",UDim2.new(0,30,0,30),UDim2.new(1,-42,0,14),Color3.fromRGB(63,22,22),C.Text)
+    local cBtn=Btn(TBar,"⨉",UDim2.new(0,30,0,30),UDim2.new(1,-42,0,14),Color3.fromRGB(63,22,22),C.Text)
+    cBtn.TextSize=16
     cBtn.MouseButton1Click:Connect(function() Win.Visible=false end)
-    local mBtn=Btn(TBar,"─",UDim2.new(0,30,0,30),UDim2.new(1,-84,0,14),Color3.fromRGB(34,36,58),C.Sub)
+    local mBtn=Btn(TBar,"━",UDim2.new(0,30,0,30),UDim2.new(1,-84,0,14),Color3.fromRGB(34,36,58),C.Sub)
+    mBtn.TextSize=16
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,760,0,64) or UDim2.new(0,760,0,620)},0.2)
+        Tw(Win,{Size=minimized and UDim2.new(0,720,0,64) or UDim2.new(0,720,0,620)},0.2)
     end)
     task.spawn(function()
         while task.wait(1) do
@@ -1024,6 +1026,22 @@ end
 -- ══════════════════════════════════════════
 local SLeft=Frame(SelPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
 local SRight=Frame(SelPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
+local SRightScroll=Instance.new("ScrollingFrame")
+SRightScroll.Size=UDim2.new(1,-16,1,-16)
+SRightScroll.Position=UDim2.new(0,8,0,8)
+SRightScroll.BackgroundTransparency=1
+SRightScroll.BorderSizePixel=0
+SRightScroll.ScrollBarThickness=6
+SRightScroll.ScrollBarImageColor3=C.Accent
+SRightScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y
+SRightScroll.CanvasSize=UDim2.new(0,0,0,0)
+SRightScroll.Parent=SRight
+local SRightPadding=Instance.new("UIPadding")
+SRightPadding.PaddingTop=UDim.new(0,8)
+SRightPadding.PaddingBottom=UDim.new(0,8)
+SRightPadding.PaddingLeft=UDim.new(0,8)
+SRightPadding.PaddingRight=UDim.new(0,8)
+SRightPadding.Parent=SRightScroll
 
 -- Item list (left)
 do
