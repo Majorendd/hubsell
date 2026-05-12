@@ -814,6 +814,8 @@ end
 
 -- Title bar
 local TBar=Frame(Win,UDim2.new(1,0,0,64),UDim2.new(0,0,0,0),Color3.fromRGB(24,28,44),0)
+TBar.Active=true
+TBar.Selectable=true
 do
     local bgi=Instance.new("UIGradient")
     bgi.Color=ColorSequence.new({
@@ -886,7 +888,7 @@ do
     TBar.InputBegan:Connect(function(input, gpe)
         if gpe or input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
         dragging = true
-        dragStart = UserInputService:GetMouseLocation()
+        dragStart = input.Position
         posStart = WinContainer.Position
     end)
     UserInputService.InputEnded:Connect(function(input, gpe)
@@ -895,7 +897,7 @@ do
     end)
     UserInputService.InputChanged:Connect(function(input, gpe)
         if not dragging or input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-        local delta = UserInputService:GetMouseLocation() - dragStart
+        local delta = input.Position - dragStart
         WinContainer.Position = UDim2.new(posStart.X.Scale, posStart.X.Offset + delta.X, posStart.Y.Scale, posStart.Y.Offset + delta.Y)
     end)
 end
