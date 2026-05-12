@@ -660,79 +660,131 @@ local RunMode="Seller" -- "Seller","Sniper","Both"
 
 -- Color palette
 local C={
-    BG=Color3.fromRGB(10,10,16),
-    Panel=Color3.fromRGB(18,18,28),
-    Card=Color3.fromRGB(26,26,40),
-    CardHover=Color3.fromRGB(32,32,50),
-    Border=Color3.fromRGB(48,48,72),
-    Accent=Color3.fromRGB(99,102,241),
-    AccentDim=Color3.fromRGB(60,63,160),
-    Green=Color3.fromRGB(52,211,153),
-    GreenDim=Color3.fromRGB(20,90,65),
+    BG=Color3.fromRGB(12,13,20),
+    Panel=Color3.fromRGB(18,20,30),
+    Card=Color3.fromRGB(24,27,38),
+    CardHover=Color3.fromRGB(30,34,48),
+    Border=Color3.fromRGB(58,64,98),
+    Accent=Color3.fromRGB(118,126,255),
+    AccentDim=Color3.fromRGB(72,79,178),
+    Green=Color3.fromRGB(80,215,144),
+    GreenDim=Color3.fromRGB(30,100,75),
     Red=Color3.fromRGB(239,68,68),
-    Yellow=Color3.fromRGB(251,191,36),
-    Text=Color3.fromRGB(235,235,250),
-    Sub=Color3.fromRGB(130,130,165),
-    InputBG=Color3.fromRGB(13,13,22),
+    Yellow=Color3.fromRGB(252,191,73),
+    Text=Color3.fromRGB(235,238,250),
+    Sub=Color3.fromRGB(150,158,190),
+    InputBG=Color3.fromRGB(14,16,25),
 }
 
 local function Tw(obj,props,t,s)
-    TweenService:Create(obj,TweenInfo.new(t or 0.15,s or Enum.EasingStyle.Quad),props):Play()
+    TweenService:Create(obj,TweenInfo.new(t or 0.18,s or Enum.EasingStyle.Quad,Enum.EasingDirection.Out),props):Play()
 end
-local function Corner(p,r) local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,r or 8); c.Parent=p; return c end
-local function Stroke(p,col,th) local s=Instance.new("UIStroke"); s.Color=col or C.Border; s.Thickness=th or 1; s.Parent=p; return s end
-local function Padding(p,a,b,l,r) local pad=Instance.new("UIPadding"); pad.PaddingTop=UDim.new(0,a or 0); pad.PaddingBottom=UDim.new(0,b or 0); pad.PaddingLeft=UDim.new(0,l or 0); pad.PaddingRight=UDim.new(0,r or 0); pad.Parent=p; return pad end
+local function Corner(p,r)
+    local c=Instance.new("UICorner")
+    c.CornerRadius=UDim.new(0,r or 12)
+    c.Parent=p
+    return c
+end
+local function Stroke(p,col,th)
+    local s=Instance.new("UIStroke")
+    s.Color=col or C.Border
+    s.Thickness=th or 1
+    s.Parent=p
+    return s
+end
+local function Padding(p,a,b,l,r)
+    local pad=Instance.new("UIPadding")
+    pad.PaddingTop=UDim.new(0,a or 0)
+    pad.PaddingBottom=UDim.new(0,b or 0)
+    pad.PaddingLeft=UDim.new(0,l or 0)
+    pad.PaddingRight=UDim.new(0,r or 0)
+    pad.Parent=p
+    return pad
+end
 
 local function Frame(parent,size,pos,color,radius)
     local f=Instance.new("Frame")
-    f.Size=size; f.Position=pos or UDim2.new(0,0,0,0)
-    f.BackgroundColor3=color or C.Panel; f.BorderSizePixel=0; f.Parent=parent
+    f.Size=size
+    f.Position=pos or UDim2.new(0,0,0,0)
+    f.BackgroundColor3=color or C.Panel
+    f.BorderSizePixel=0
+    f.Parent=parent
     if radius then Corner(f,radius) end
     return f
 end
 local function Label(parent,text,size,color,font,xalign)
     local l=Instance.new("TextLabel")
-    l.Text=text; l.TextSize=size or 13; l.TextColor3=color or C.Text
-    l.Font=font or Enum.Font.GothamBold; l.BackgroundTransparency=1
-    l.Size=UDim2.new(1,0,1,0); l.TextXAlignment=xalign or Enum.TextXAlignment.Left
-    l.Parent=parent; return l
+    l.Text=text
+    l.TextSize=size or 13
+    l.TextColor3=color or C.Text
+    l.Font=font or Enum.Font.GothamBold
+    l.BackgroundTransparency=1
+    l.Size=UDim2.new(1,0,1,0)
+    l.TextXAlignment=xalign or Enum.TextXAlignment.Left
+    l.Parent=parent
+    return l
 end
 local function Btn(parent,text,size,pos,bg,tc)
     local b=Instance.new("TextButton")
-    b.Size=size; b.Position=pos or UDim2.new(0,0,0,0)
-    b.BackgroundColor3=bg or C.Accent; b.TextColor3=tc or C.Text
-    b.Text=text; b.TextSize=13; b.Font=Enum.Font.GothamBold
-    b.BorderSizePixel=0; b.AutoButtonColor=false; b.Parent=parent
-    Corner(b,8)
-    b.MouseEnter:Connect(function() Tw(b,{BackgroundColor3=Color3.new(b.BackgroundColor3.R+0.06,b.BackgroundColor3.G+0.06,b.BackgroundColor3.B+0.08)}) end)
+    b.Size=size
+    b.Position=pos or UDim2.new(0,0,0,0)
+    b.BackgroundColor3=bg or C.Accent
+    b.TextColor3=tc or C.Text
+    b.Text=text
+    b.TextSize=13
+    b.Font=Enum.Font.GothamBold
+    b.BorderSizePixel=0
+    b.AutoButtonColor=false
+    b.Parent=parent
+    Corner(b,10)
+    local original = b.BackgroundColor3
+    b.MouseEnter:Connect(function()
+        Tw(b,{BackgroundColor3=Color3.fromRGB(math.min(255,math.floor(original.R*255+12)),math.min(255,math.floor(original.G*255+12)),math.min(255,math.floor(original.B*255+18)))})
+    end)
     b.MouseLeave:Connect(function() Tw(b,{BackgroundColor3=bg or C.Accent}) end)
     return b
 end
 local function Input(parent,placeholder,size,pos)
     local box=Instance.new("TextBox")
-    box.Size=size; box.Position=pos or UDim2.new(0,0,0,0)
-    box.BackgroundColor3=C.InputBG; box.TextColor3=C.Text
-    box.PlaceholderColor3=C.Sub; box.PlaceholderText=placeholder or ""
-    box.Text=""; box.TextSize=12; box.Font=Enum.Font.Gotham
-    box.BorderSizePixel=0; box.ClearTextOnFocus=false; box.Parent=parent
-    Corner(box,7); Padding(box,0,0,8,8)
+    box.Size=size
+    box.Position=pos or UDim2.new(0,0,0,0)
+    box.BackgroundColor3=C.InputBG
+    box.TextColor3=C.Text
+    box.PlaceholderColor3=C.Sub
+    box.PlaceholderText=placeholder or ""
+    box.Text=""
+    box.TextSize=12
+    box.Font=Enum.Font.Gotham
+    box.BorderSizePixel=0
+    box.ClearTextOnFocus=false
+    box.Parent=parent
+    Corner(box,10)
+    Padding(box,0,0,12,12)
     local sk=Stroke(box,C.Border,1)
     box.Focused:Connect(function() Tw(sk,{Color=C.Accent}) end)
     box.FocusLost:Connect(function() Tw(sk,{Color=C.Border}) end)
     return box
 end
 local function Toggle(parent,pos,default)
-    local h=Frame(parent,UDim2.new(0,42,0,22),pos,Color3.fromRGB(35,35,55),11)
-    local k=Frame(h,UDim2.new(0,16,0,16),UDim2.new(0,3,0.5,-8),default and C.Accent or C.Border,8)
+    local h=Frame(parent,UDim2.new(0,46,0,24),pos,Color3.fromRGB(40,43,66),12)
+    local k=Frame(h,UDim2.new(0,20,0,20),UDim2.new(0,3,0.5,-10),default and C.Accent or C.Border,12)
     local state=default or false
     local callbacks={}
     local function Upd()
-        Tw(h,{BackgroundColor3=state and C.AccentDim or Color3.fromRGB(35,35,55)})
-        Tw(k,{Position=state and UDim2.new(1,-19,0.5,-8) or UDim2.new(0,3,0.5,-8),BackgroundColor3=state and C.Accent or C.Sub})
+        Tw(h,{BackgroundColor3=state and Color3.fromRGB(62,66,109) or Color3.fromRGB(40,43,66)})
+        Tw(k,{Position=state and UDim2.new(1,-23,0.5,-10) or UDim2.new(0,3,0.5,-10),BackgroundColor3=state and C.Accent or C.Sub})
     end
     Upd()
-    local tb=Instance.new("TextButton"); tb.Size=UDim2.new(1,0,1,0); tb.BackgroundTransparency=1; tb.Text=""; tb.Parent=h
-    tb.MouseButton1Click:Connect(function() state=not state; Upd(); for _,cb in pairs(callbacks) do cb(state) end end)
+    local tb=Instance.new("TextButton")
+    tb.Size=UDim2.new(1,0,1,0)
+    tb.BackgroundTransparency=1
+    tb.Text=""
+    tb.Parent=h
+    tb.MouseButton1Click:Connect(function()
+        state=not state
+        Upd()
+        for _,cb in pairs(callbacks) do cb(state) end
+    end)
     return h,
         function() return state end,
         function(cb) table.insert(callbacks,cb) end,
@@ -740,46 +792,101 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,660,0,540),UDim2.new(0.5,-330,0.5,-270),C.BG,14)
+local Win=Frame(ScreenGui,UDim2.new(0,700,0,560),UDim2.new(0.5,-350,0.5,-280),C.BG,18)
 Win.ClipsDescendants=true
 do
-    local g=Instance.new("UIGradient"); g.Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(10,10,18)),ColorSequenceKeypoint.new(1,Color3.fromRGB(16,10,26))}); g.Rotation=135; g.Parent=Win
-    Stroke(Win,C.Border,1)
+    local bg=Instance.new("UIGradient")
+    bg.Color=ColorSequence.new({
+        ColorSequenceKeypoint.new(0,Color3.fromRGB(15,16,26)),
+        ColorSequenceKeypoint.new(1,Color3.fromRGB(20,22,38)),
+    })
+    bg.Rotation=120
+    bg.Parent=Win
+    Stroke(Win,Color3.fromRGB(46,51,87),1)
 end
 
 -- Title bar
-local TBar=Frame(Win,UDim2.new(1,0,0,50),UDim2.new(0,0,0,0),Color3.fromRGB(14,14,24),0)
+local TBar=Frame(Win,UDim2.new(1,0,0,64),UDim2.new(0,0,0,0),Color3.fromRGB(20,24,42),0)
 do
-    local tl=Instance.new("TextLabel"); tl.Text="PLAZA PLUS"; tl.TextSize=15; tl.Font=Enum.Font.GothamBold; tl.TextColor3=C.Text; tl.BackgroundTransparency=1; tl.Position=UDim2.new(0,18,0,8); tl.Size=UDim2.new(0,160,0,20); tl.TextXAlignment=Enum.TextXAlignment.Left; tl.Parent=TBar
-    local sl=Instance.new("TextLabel"); sl.Text="Auto Seller & Sniper"; sl.TextSize=10; sl.Font=Enum.Font.Gotham; sl.TextColor3=C.Sub; sl.BackgroundTransparency=1; sl.Position=UDim2.new(0,18,0,28); sl.Size=UDim2.new(0,200,0,14); sl.TextXAlignment=Enum.TextXAlignment.Left; sl.Parent=TBar
-    -- status dot
-    local dot=Frame(TBar,UDim2.new(0,8,0,8),UDim2.new(0,200,0,21),C.Sub,4)
-    -- close/min
-    local cBtn=Btn(TBar,"✕",UDim2.new(0,30,0,30),UDim2.new(1,-40,0.5,-15),Color3.fromRGB(60,18,18),C.Red)
+    local bgi=Instance.new("UIGradient")
+    bgi.Color=ColorSequence.new({
+        ColorSequenceKeypoint.new(0,Color3.fromRGB(28,32,52)),
+        ColorSequenceKeypoint.new(1,Color3.fromRGB(18,22,36)),
+    })
+    bgi.Rotation=90
+    bgi.Parent=TBar
+    local tl=Instance.new("TextLabel")
+    tl.Text="PLAZA PLUS"
+    tl.TextSize=16
+    tl.Font=Enum.Font.GothamBold
+    tl.TextColor3=C.Text
+    tl.BackgroundTransparency=1
+    tl.Position=UDim2.new(0,24,0,12)
+    tl.Size=UDim2.new(0,220,0,24)
+    tl.TextXAlignment=Enum.TextXAlignment.Left
+    tl.Parent=TBar
+    local sl=Instance.new("TextLabel")
+    sl.Text="Modern seller & sniper dashboard"
+    sl.TextSize=11
+    sl.Font=Enum.Font.Gotham
+    sl.TextColor3=C.Sub
+    sl.BackgroundTransparency=1
+    sl.Position=UDim2.new(0,24,0,34)
+    sl.Size=UDim2.new(0,240,0,18)
+    sl.TextXAlignment=Enum.TextXAlignment.Left
+    sl.Parent=TBar
+    local dot=Frame(TBar,UDim2.new(0,10,0,10),UDim2.new(0,260,0,27),C.Sub,6)
+    local dotLabel=Instance.new("TextLabel")
+    dotLabel.Text="Status"
+    dotLabel.TextSize=10
+    dotLabel.Font=Enum.Font.Gotham
+    dotLabel.TextColor3=C.Sub
+    dotLabel.BackgroundTransparency=1
+    dotLabel.Position=UDim2.new(0,276,0,23)
+    dotLabel.Size=UDim2.new(0,70,0,16)
+    dotLabel.TextXAlignment=Enum.TextXAlignment.Left
+    dotLabel.Parent=TBar
+    local cBtn=Btn(TBar,"✕",UDim2.new(0,30,0,30),UDim2.new(1,-42,0,14),Color3.fromRGB(63,22,22),C.Text)
     cBtn.MouseButton1Click:Connect(function() Win.Visible=false end)
-    local mBtn=Btn(TBar,"─",UDim2.new(0,30,0,30),UDim2.new(1,-76,0.5,-15),Color3.fromRGB(30,30,46),C.Sub)
+    local mBtn=Btn(TBar,"─",UDim2.new(0,30,0,30),UDim2.new(1,-84,0,14),Color3.fromRGB(34,36,58),C.Sub)
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,660,0,50) or UDim2.new(0,660,0,540)},0.2)
+        Tw(Win,{Size=minimized and UDim2.new(0,700,0,64) or UDim2.new(0,700,0,560)},0.2)
     end)
-    -- Running indicator
     task.spawn(function()
         while task.wait(1) do
-            if IsRunning then Tw(dot,{BackgroundColor3=C.Green}) else Tw(dot,{BackgroundColor3=C.Sub}) end
+            if IsRunning then
+                Tw(dot,{BackgroundColor3=C.Green})
+                dotLabel.TextColor3=C.Green
+            else
+                Tw(dot,{BackgroundColor3=C.Sub})
+                dotLabel.TextColor3=C.Sub
+            end
         end
     end)
 end
 
 -- Tab row
-local TabRow=Frame(Win,UDim2.new(1,0,0,38),UDim2.new(0,0,0,50),Color3.fromRGB(13,13,22),0)
-local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),C.Border,0)
+local TabRow=Frame(Win,UDim2.new(1,0,0,44),UDim2.new(0,0,0,64),Color3.fromRGB(17,20,34),0)
+local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),Color3.fromRGB(42,47,79),0)
 
 local function MakeTabBtn(text,xOff,active)
-    local t=Instance.new("TextButton"); t.Size=UDim2.new(0,110,0,30); t.Position=UDim2.new(0,xOff,0.5,-15)
-    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(22,22,36); t.TextColor3=active and C.Text or C.Sub
-    t.Text=text; t.TextSize=12; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.Parent=TabRow
-    Corner(t,7); return t
+    local t=Instance.new("TextButton")
+    t.Size=UDim2.new(0,120,0,30)
+    t.Position=UDim2.new(0,xOff,0.5,-15)
+    t.BackgroundColor3=active and Color3.fromRGB(76,80,164) or Color3.fromRGB(28,32,52)
+    t.TextColor3=active and C.Text or C.Sub
+    t.Text=text
+    t.TextSize=12
+    t.Font=Enum.Font.GothamBold
+    t.BorderSizePixel=0
+    t.AutoButtonColor=false
+    t.Parent=TabRow
+    Corner(t,10)
+    t.MouseEnter:Connect(function() if not active then Tw(t,{BackgroundColor3=Color3.fromRGB(35,40,64)}) end end)
+    t.MouseLeave:Connect(function() if not active then Tw(t,{BackgroundColor3=Color3.fromRGB(28,32,52)}) end end)
+    return t
 end
 
 local SelTab=MakeTabBtn("🏪  Seller",10,true)
@@ -835,22 +942,67 @@ CfgTab.MouseButton1Click:Connect(function() SwitchTab(CfgPanel,CfgTab) end)
 --  SHARED: Item card builder
 -- ══════════════════════════════════════════
 local function ItemCard(parent,name,price,extra,onRemove)
-    local card=Frame(parent,UDim2.new(1,0,0,46),UDim2.new(0,0,0,0),C.Card,8)
-    Stroke(card,C.Border,1)
-    local nl=Instance.new("TextLabel"); nl.Text=name; nl.TextSize=12; nl.Font=Enum.Font.GothamBold; nl.TextColor3=C.Text; nl.BackgroundTransparency=1; nl.Position=UDim2.new(0,10,0,6); nl.Size=UDim2.new(1,-50,0,18); nl.TextXAlignment=Enum.TextXAlignment.Left; nl.Parent=card; nl.TextTruncate=Enum.TextTruncate.AtEnd
-    local dl=Instance.new("TextLabel"); dl.Text="💎 "..tostring(price)..(extra~="" and "  ·  "..extra or ""); dl.TextSize=11; dl.Font=Enum.Font.Gotham; dl.TextColor3=C.Sub; dl.BackgroundTransparency=1; dl.Position=UDim2.new(0,10,0,26); dl.Size=UDim2.new(1,-50,0,14); dl.TextXAlignment=Enum.TextXAlignment.Left; dl.Parent=card
-    -- Live badge shown when script is running
-    local liveBadge=Instance.new("TextLabel"); liveBadge.Text="● LIVE"; liveBadge.TextSize=9; liveBadge.Font=Enum.Font.GothamBold; liveBadge.TextColor3=C.Green; liveBadge.BackgroundTransparency=1; liveBadge.Position=UDim2.new(1,-70,0,6); liveBadge.Size=UDim2.new(0,36,0,12); liveBadge.TextXAlignment=Enum.TextXAlignment.Right; liveBadge.Parent=card; liveBadge.Visible=false
+    local card=Frame(parent,UDim2.new(1,0,0,54),UDim2.new(0,0,0,0),C.Card,14)
+    Stroke(card,Color3.fromRGB(52,57,91),1)
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0,10)
+    padding.PaddingBottom = UDim.new(0,10)
+    padding.PaddingLeft = UDim.new(0,12)
+    padding.PaddingRight = UDim.new(0,44)
+    padding.Parent = card
+    local nl=Instance.new("TextLabel")
+    nl.Text=name
+    nl.TextSize=13
+    nl.Font=Enum.Font.GothamBold
+    nl.TextColor3=C.Text
+    nl.BackgroundTransparency=1
+    nl.Size=UDim2.new(1,0,0,18)
+    nl.TextXAlignment=Enum.TextXAlignment.Left
+    nl.TextTruncate=Enum.TextTruncate.AtEnd
+    nl.Parent=card
+    local dl=Instance.new("TextLabel")
+    dl.Text="💎 "..tostring(price)..(extra~="" and "  ·  "..extra or "")
+    dl.TextSize=11
+    dl.Font=Enum.Font.Gotham
+    dl.TextColor3=C.Sub
+    dl.BackgroundTransparency=1
+    dl.Position=UDim2.new(0,0,0,26)
+    dl.Size=UDim2.new(1,0,0,14)
+    dl.TextXAlignment=Enum.TextXAlignment.Left
+    dl.Parent=card
+    local liveBadge=Instance.new("TextLabel")
+    liveBadge.Text="● LIVE"
+    liveBadge.TextSize=9
+    liveBadge.Font=Enum.Font.GothamBold
+    liveBadge.TextColor3=C.Green
+    liveBadge.BackgroundTransparency=1
+    liveBadge.Position=UDim2.new(1,-72,0,12)
+    liveBadge.Size=UDim2.new(0,44,0,14)
+    liveBadge.TextXAlignment=Enum.TextXAlignment.Right
+    liveBadge.Parent=card
+    liveBadge.Visible=false
     task.spawn(function()
         while card.Parent do
             liveBadge.Visible=IsRunning
             task.wait(1)
         end
     end)
-    local rb=Instance.new("TextButton"); rb.Size=UDim2.new(0,26,0,26); rb.Position=UDim2.new(1,-34,0.5,-13); rb.BackgroundColor3=Color3.fromRGB(50,15,15); rb.TextColor3=C.Red; rb.Text="✕"; rb.TextSize=12; rb.Font=Enum.Font.GothamBold; rb.BorderSizePixel=0; rb.AutoButtonColor=false; rb.Parent=card; Corner(rb,6)
+    local rb=Instance.new("TextButton")
+    rb.Size=UDim2.new(0,28,0,28)
+    rb.Position=UDim2.new(1,-34,0.5,-14)
+    rb.BackgroundColor3=Color3.fromRGB(56,22,22)
+    rb.TextColor3=C.Red
+    rb.Text="✕"
+    rb.TextSize=13
+    rb.Font=Enum.Font.GothamBold
+    rb.BorderSizePixel=0
+    rb.AutoButtonColor=false
+    rb.Parent=card
+    Corner(rb,10)
+    rb.MouseEnter:Connect(function() Tw(rb,{BackgroundColor3=Color3.fromRGB(76,26,26)}) end)
+    rb.MouseLeave:Connect(function() Tw(rb,{BackgroundColor3=Color3.fromRGB(56,22,22)}) end)
     rb.MouseButton1Click:Connect(function()
         card:Destroy()
-        -- Also wipe from blacklist so re-adding works cleanly
         for uid,_ in pairs(BlacklistedUIDs) do BlacklistedUIDs[uid]=nil end
         onRemove()
     end)
