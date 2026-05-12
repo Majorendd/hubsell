@@ -19,23 +19,45 @@ local function VerifyKey(key)
     local KEYAUTH_SECRET  = "008d11bc9d49ef832360277619c494e033e77ecffb08b03d4979525597a9c15f"     -- Your KeyAuth secret
     local KEYAUTH_VERSION = "1.0"
 
-    local url = string.format(
-        "https://keyauth.win/api/1.2/?type=license&name=%s&ownerid=%s&key=%s&ver=%s",
-        KEYAUTH_NAME, KEYAUTH_OWNERID, HttpService:UrlEncode(key), KEYAUTH_VERSION
+    -- Step 1: Initialize session
+    local initURL = string.format(
+        "https://keyauth.win/api/1.2/?type=init&name=%s&ownerid=%s&ver=%s",
+        KEYAUTH_NAME, KEYAUTH_OWNERID, KEYAUTH_VERSION
     )
 
-    local ok, response = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(url))
+    local ok1, initResp = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(initURL))
     end)
 
-    if not ok or type(response) ~= "table" then
+    if not ok1 or type(initResp) ~= "table" then
         return false, "Could not reach auth server"
     end
 
-    if response.success == true then
-        return true, response.message or "Authenticated"
+    if not initResp.sessionid then
+        return false, initResp.message or "Session init failed"
+    end
+
+    local sessionID = initResp.sessionid
+
+    -- Step 2: Verify license key using session ID
+    local licenseURL = string.format(
+        "https://keyauth.win/api/1.2/?type=license&name=%s&ownerid=%s&key=%s&sessionid=%s",
+        KEYAUTH_NAME, KEYAUTH_OWNERID,
+        HttpService:UrlEncode(key), sessionID
+    )
+
+    local ok2, licResp = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(licenseURL))
+    end)
+
+    if not ok2 or type(licResp) ~= "table" then
+        return false, "License check failed"
+    end
+
+    if licResp.success == true then
+        return true, licResp.message or "Authenticated"
     else
-        return false, response.message or "Invalid key"
+        return false, licResp.message or "Invalid key"
     end
 end
 
