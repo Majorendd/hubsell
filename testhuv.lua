@@ -794,12 +794,13 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local WinContainer=Frame(ScreenGui,UDim2.new(0,706,0,566),UDim2.new(0.5,-353,0.5,-283),Color3.fromRGB(0,0,0),24)
-WinContainer.BackgroundTransparency=0.86
+local WinContainer=Frame(ScreenGui,UDim2.new(0,706,0,566),UDim2.new(0.5,-353,0.5,-283),Color3.fromRGB(0,0,0),18)
+WinContainer.BackgroundTransparency=0.85
 WinContainer.ZIndex=0
-local Win=Frame(WinContainer,UDim2.new(0,700,0,560),UDim2.new(0,3,0,3),C.BG,18)
+WinContainer.ClipsDescendants=true
+local Win=Frame(WinContainer,UDim2.new(1,-6,1,-6),UDim2.new(0,3,0,3),C.BG,18)
 Win.ZIndex=1
-Win.ClipsDescendants=true
+Win.ClipsDescendants=false
 do
     local bg=Instance.new("UIGradient")
     bg.Color=ColorSequence.new({
@@ -862,11 +863,9 @@ do
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
         if minimized then
-            Tw(WinContainer,{Size=UDim2.new(0,706,0,70)})
-            Tw(Win,{Size=UDim2.new(0,700,0,64)})
+            Tw(WinContainer,{Size=UDim2.new(0,706,0,70)},0.2)
         else
-            Tw(WinContainer,{Size=UDim2.new(0,706,0,566)})
-            Tw(Win,{Size=UDim2.new(0,700,0,560)})
+            Tw(WinContainer,{Size=UDim2.new(0,706,0,566)},0.2)
         end
     end)
     task.spawn(function()
