@@ -806,11 +806,12 @@ do
 end
 
 -- Tab row
-local TabRow=Frame(Win,UDim2.new(1,0,0,38),UDim2.new(0,0,0,50),Color3.fromRGB(13,13,22),0)
+local TabRow=Frame(Win,UDim2.new(1,0,0,44),UDim2.new(0,0,0,50),Color3.fromRGB(18,20,36),0)
+TabRow.ZIndex=4
 local tabGI=Instance.new("UIGradient")
 tabGI.Color=ColorSequence.new({
-    ColorSequenceKeypoint.new(0,Color3.fromRGB(16,16,28)),
-    ColorSequenceKeypoint.new(1,Color3.fromRGB(13,13,20)),
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(21,24,42)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(18,20,38)),
 })
 tabGI.Rotation=90
 tabGI.Parent=TabRow
@@ -818,9 +819,9 @@ local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),C.Border,0)
 
 local function MakeTabBtn(text,xOff,active)
     local t=Instance.new("TextButton")
-    t.Size=UDim2.new(0,118,0,34)
+    t.Size=UDim2.new(0,128,0,34)
     t.Position=UDim2.new(0,xOff,0.5,-17)
-    t.BackgroundColor3=active and Color3.fromRGB(70,78,210) or Color3.fromRGB(24,27,42)
+    t.BackgroundColor3=active and Color3.fromRGB(80,89,225) or Color3.fromRGB(24,27,42)
     t.TextColor3=active and C.Text or C.Sub
     t.Text=text
     t.TextSize=12
@@ -829,32 +830,32 @@ local function MakeTabBtn(text,xOff,active)
     t.AutoButtonColor=false
     t.Parent=TabRow
     Corner(t,14)
-    local stroke=Stroke(t,Color3.fromRGB(68,74,124),1)
-    stroke.Transparency=active and 0 or 0.6
+    t.ZIndex=5
+    local stroke=Stroke(t,Color3.fromRGB(88,98,162),1)
+    stroke.Transparency=active and 0 or 0.7
     t.ActiveStroke=stroke
     t.IsActive=active
     t.MouseEnter:Connect(function()
         if not t.IsActive then
-            Tw(t,{BackgroundColor3=Color3.fromRGB(32,38,60)})
+            Tw(t,{BackgroundColor3=Color3.fromRGB(34,40,66)})
             Tw(stroke,{Transparency=0})
         end
     end)
     t.MouseLeave:Connect(function()
         if not t.IsActive then
             Tw(t,{BackgroundColor3=Color3.fromRGB(24,27,42)})
-            Tw(stroke,{Transparency=0.6})
+            Tw(stroke,{Transparency=0.7})
         end
     end)
     return t
 end
 
 local SelTab=MakeTabBtn("🏪  Seller",10,true)
-local SniTab=MakeTabBtn("🔒  Sniper",128,false)
--- Coming Soon overlay on sniper tab click
-SniTab.MouseButton1Click:Connect(function()
-    SwitchTab(SniPanel, SniTab)
-end)
-local CfgTab=MakeTabBtn("⚙  Settings",246,false)
+local SniTab=MakeTabBtn("🔒  Sniper",152,false)
+local CfgTab=MakeTabBtn("⚙  Settings",296,false)
+SelTab.MouseButton1Click:Connect(function() SwitchTab(SelPanel,SelTab) end)
+SniTab.MouseButton1Click:Connect(function() SwitchTab(SniPanel,SniTab) end)
+CfgTab.MouseButton1Click:Connect(function() SwitchTab(CfgPanel,CfgTab) end)
 
 -- Content host
 local ContentArea=Frame(Win,UDim2.new(1,-20,1,-120),UDim2.new(0,10,0,96),C.BG,0)
@@ -881,8 +882,6 @@ local function SwitchTab(panel,activeTab)
     Tw(activeTab,{BackgroundColor3=Color3.fromRGB(70,78,210),TextColor3=C.Text})
     if activeTab.ActiveStroke then Tw(activeTab.ActiveStroke,{Transparency=0}) end
 end
-SelTab.MouseButton1Click:Connect(function() SwitchTab(SelPanel,SelTab) end)
-SniTab.MouseButton1Click:Connect(function() SwitchTab(SniPanel,SniTab) end)
 -- Replace sniper panel with Coming Soon screen
 do
     local cs=Frame(SniPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,18)
@@ -909,7 +908,6 @@ do
         end
     end)
 end
-CfgTab.MouseButton1Click:Connect(function() SwitchTab(CfgPanel,CfgTab) end)
 
 -- ══════════════════════════════════════════
 --  SHARED: Item card builder
