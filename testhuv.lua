@@ -898,7 +898,7 @@ end)
 local CfgTab=MakeTabBtn("⚙  Settings",246,false)
 
 -- Content host
-local ContentArea=Frame(Win,UDim2.new(1,-20,1,-140),UDim2.new(0,10,0,96),C.BG,0)
+local ContentArea=Frame(Win,UDim2.new(1,-20,1,-156),UDim2.new(0,10,0,108),C.BG,0)
 ContentArea.BackgroundTransparency=1
 
 -- ── Panels ───────────────────────────────
