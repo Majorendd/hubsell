@@ -794,10 +794,10 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local Shadow=Frame(ScreenGui,UDim2.new(0,706,0,566),UDim2.new(0.5,-353,0.5,-283),Color3.fromRGB(0,0,0),22)
-Shadow.BackgroundTransparency=0.8
-Shadow.ZIndex=0
-local Win=Frame(ScreenGui,UDim2.new(0,700,0,560),UDim2.new(0.5,-350,0.5,-280),C.BG,18)
+local WinContainer=Frame(ScreenGui,UDim2.new(0,706,0,566),UDim2.new(0.5,-353,0.5,-283),Color3.fromRGB(0,0,0),24)
+WinContainer.BackgroundTransparency=0.86
+WinContainer.ZIndex=0
+local Win=Frame(WinContainer,UDim2.new(0,700,0,560),UDim2.new(0,3,0,3),C.BG,18)
 Win.ZIndex=1
 Win.ClipsDescendants=true
 do
@@ -861,7 +861,13 @@ do
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,700,0,64) or UDim2.new(0,700,0,560)},0.2)
+        if minimized then
+            Tw(WinContainer,{Size=UDim2.new(0,706,0,70)})
+            Tw(Win,{Size=UDim2.new(0,700,0,64)})
+        else
+            Tw(WinContainer,{Size=UDim2.new(0,706,0,566)})
+            Tw(Win,{Size=UDim2.new(0,700,0,560)})
+        end
     end)
     task.spawn(function()
         while task.wait(1) do
