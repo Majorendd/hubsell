@@ -735,6 +735,8 @@ local function Btn(parent,text,size,pos,bg,tc)
     b.Font=Enum.Font.GothamBold
     b.BorderSizePixel=0
     b.AutoButtonColor=false
+    b.Active=true
+    b.ZIndex=parent.ZIndex + 2
     b.Parent=parent
     Corner(b,10)
     local original = b.BackgroundColor3
@@ -792,29 +794,34 @@ local function Toggle(parent,pos,default)
 end
 
 -- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,720,0,580),UDim2.new(0.5,-360,0.5,-290),C.BG,18)
+local Shadow=Frame(ScreenGui,UDim2.new(0,706,0,566),UDim2.new(0.5,-353,0.5,-283),Color3.fromRGB(0,0,0),22)
+Shadow.BackgroundTransparency=0.8
+Shadow.ZIndex=0
+local Win=Frame(ScreenGui,UDim2.new(0,700,0,560),UDim2.new(0.5,-350,0.5,-280),C.BG,18)
+Win.ZIndex=1
 Win.ClipsDescendants=true
 do
     local bg=Instance.new("UIGradient")
     bg.Color=ColorSequence.new({
-        ColorSequenceKeypoint.new(0,Color3.fromRGB(15,16,26)),
-        ColorSequenceKeypoint.new(1,Color3.fromRGB(20,22,38)),
+        ColorSequenceKeypoint.new(0,Color3.fromRGB(17,19,29)),
+        ColorSequenceKeypoint.new(1,Color3.fromRGB(21,24,38)),
     })
-    bg.Rotation=120
+    bg.Rotation=130
     bg.Parent=Win
-    Stroke(Win,Color3.fromRGB(46,51,87),1)
+    Stroke(Win,Color3.fromRGB(70,80,120),1)
 end
 
 -- Title bar
-local TBar=Frame(Win,UDim2.new(1,0,0,64),UDim2.new(0,0,0,0),Color3.fromRGB(20,24,42),0)
+local TBar=Frame(Win,UDim2.new(1,0,0,64),UDim2.new(0,0,0,0),Color3.fromRGB(24,28,44),0)
 do
     local bgi=Instance.new("UIGradient")
     bgi.Color=ColorSequence.new({
-        ColorSequenceKeypoint.new(0,Color3.fromRGB(28,32,52)),
-        ColorSequenceKeypoint.new(1,Color3.fromRGB(18,22,36)),
+        ColorSequenceKeypoint.new(0,Color3.fromRGB(30,34,56)),
+        ColorSequenceKeypoint.new(1,Color3.fromRGB(22,26,40)),
     })
     bgi.Rotation=90
     bgi.Parent=TBar
+    Stroke(TBar,Color3.fromRGB(54,64,92),1)
     local tl=Instance.new("TextLabel")
     tl.Text="PLAZA PLUS"
     tl.TextSize=16
@@ -846,15 +853,15 @@ do
     dotLabel.Size=UDim2.new(0,70,0,16)
     dotLabel.TextXAlignment=Enum.TextXAlignment.Left
     dotLabel.Parent=TBar
-    local cBtn=Btn(TBar,"⨉",UDim2.new(0,30,0,30),UDim2.new(1,-42,0,14),Color3.fromRGB(63,22,22),C.Text)
-    cBtn.TextSize=16
+    local cBtn=Btn(TBar,"⨉",UDim2.new(0,34,0,34),UDim2.new(1,-46,0,14),Color3.fromRGB(63,22,22),C.Text)
+    cBtn.TextSize=18
     cBtn.MouseButton1Click:Connect(function() Win.Visible=false end)
-    local mBtn=Btn(TBar,"━",UDim2.new(0,30,0,30),UDim2.new(1,-84,0,14),Color3.fromRGB(34,36,58),C.Sub)
-    mBtn.TextSize=16
+    local mBtn=Btn(TBar,"━",UDim2.new(0,34,0,34),UDim2.new(1,-88,0,14),Color3.fromRGB(34,36,58),C.Sub)
+    mBtn.TextSize=18
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,720,0,64) or UDim2.new(0,720,0,620)},0.2)
+        Tw(Win,{Size=minimized and UDim2.new(0,700,0,64) or UDim2.new(0,700,0,560)},0.2)
     end)
     task.spawn(function()
         while task.wait(1) do
