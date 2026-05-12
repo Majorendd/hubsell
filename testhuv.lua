@@ -879,6 +879,25 @@ do
             end
         end
     end)
+    -- Drag support for window
+    local dragging = false
+    local dragStart = Vector2.new(0, 0)
+    local posStart = UDim2.new(0, 0, 0, 0)
+    TBar.InputBegan:Connect(function(input, gpe)
+        if gpe or input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+        dragging = true
+        dragStart = UserInputService:GetMouseLocation()
+        posStart = WinContainer.Position
+    end)
+    UserInputService.InputEnded:Connect(function(input, gpe)
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+        dragging = false
+    end)
+    UserInputService.InputChanged:Connect(function(input, gpe)
+        if not dragging or input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+        local delta = UserInputService:GetMouseLocation() - dragStart
+        WinContainer.Position = UDim2.new(posStart.X.Scale, posStart.X.Offset + delta.X, posStart.Y.Scale, posStart.Y.Offset + delta.Y)
+    end)
 end
 
 -- Tab row
@@ -2162,14 +2181,8 @@ stopBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ══════════════════════════════════════════
---  DRAG + TOGGLE
+--  TOGGLE
 -- ══════════════════════════════════════════
-do
-    local drag,ds,sp=false,nil,nil
-    TBar.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=true; ds=i.Position; sp=Win.Position end end)
-    UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType==Enum.UserInputType.MouseMovement then local d=i.Position-ds; Win.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y) end end)
-    UserInputService.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end end)
-end
 UserInputService.InputBegan:Connect(function(i,gpe) if not gpe and i.KeyCode==Enum.KeyCode.RightShift then Win.Visible=not Win.Visible end end)
 
 if not table.find({PS99.Normal,PS99.Pro,PETSGO.Normal,PETSGO.Pro},game.PlaceId) then
