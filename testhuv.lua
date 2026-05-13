@@ -1,7 +1,7 @@
--- ╔══════════════════════════════════════════╗
--- ║        PLAZA PLUS — GUI EDITION          ║
--- ║   Full seller + sniper with in-game UI   ║
--- ╚══════════════════════════════════════════╝
+-- â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
+-- â•‘        PLAZA PLUS â€” GUI EDITION          â•‘
+-- â•‘   Full seller + sniper with in-game UI   â•‘
+-- â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 print("[Plaza Plus]: Script executed.")
 local timer = tick()
@@ -43,9 +43,9 @@ if PlayerScripts then
     PlayerScripts = PlayerScripts:WaitForChild("Scripts", 5) or PlayerScripts
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  GAME LIBRARIES
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local NLibrary      = ReplicatedStorage:WaitForChild("Library", 5)
 local PlayerSave, TradingPlazaCmds, Mailbox, Rarities
 local Constants, UpgradeCmds, Variables
@@ -151,9 +151,9 @@ LocalPlayer.Idled:Connect(function()
     end)
 end)
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  FILE PERSISTENCE
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local FolderPath = "System Exodus/" .. (table.find({PETSGO.Normal,PETSGO.Pro},game.PlaceId) and "PETS GO" or "Pet Simulator 99")
 local FileName   = FolderPath .. "/" .. LocalPlayer.Name .. " PlazaPlus.cfg"
 if not isfolder("System Exodus") then makefolder("System Exodus") end
@@ -182,9 +182,9 @@ local function SaveCfg()
     pcall(function() writefile(FileName, HttpService:JSONEncode(Cfg)) end)
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  HELPERS
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local SuffLo = {"k","m","b","t"}
 local SuffUp = {"K","M","B","T"}
 local function AddSuffix(n)
@@ -220,9 +220,9 @@ local function FromRoman(s)
     return t
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  ITEM LIST BUILD
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local ItemList = {}
 pcall(function()
     if not NLibrary then return end
@@ -290,9 +290,9 @@ pcall(function()
     end
 end)
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  CORE LOGIC FUNCTIONS
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local function CalcPercent(rap,cost)
     local w=((cost-rap)/rap)*100
     w=math.floor(w*2+0.5)/2
@@ -455,9 +455,9 @@ local function FindItem(Data, ReturnAmount)
     return ReturnAmount and Count or nil
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SERVER HOP
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local StartingTime=os.time()
 local IDs={}
 
@@ -508,9 +508,9 @@ local function Serverhop()
     end
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  WEBHOOK
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local function SendWebhook(payload)
     if not Cfg.WebhookURL or Cfg.WebhookURL=="" then return end
     pcall(function()
@@ -540,7 +540,7 @@ local function SniperWebhook(info, percent)
             title = "||"..LocalPlayer.Name.."|| has sniped an item!",
             description = description,
             thumbnail = {url = info.Icon and ("https://biggamesapi.io/image/"..tostring(info.Icon)) or nil},
-            footer = {text = "@"..LocalPlayer.Name.." · Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
+            footer = {text = "@"..LocalPlayer.Name.." Â· Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
             timestamp = DateTime.now():ToIsoDate(),
         }}
     })
@@ -562,24 +562,24 @@ local function SellerWebhook(info)
             title = "||"..LocalPlayer.Name.."|| has sold an item!",
             description = description,
             thumbnail = {url = info.Icon and ("https://biggamesapi.io/image/"..tostring(info.Icon)) or nil},
-            footer = {text = "@"..LocalPlayer.Name.." · Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
+            footer = {text = "@"..LocalPlayer.Name.." Â· Plaza Plus", icon_url = "https://i.gyazo.com/784ff41bd2b15e0046c8b621fab31990.png"},
             timestamp = DateTime.now():ToIsoDate(),
         }}
     })
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  MAILBOX LOOP
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 task.spawn(function()
     while task.wait(30) do
         pcall(function() Library.Network.Invoke("Mailbox: Claim All") end)
     end
 end)
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  GUI SYSTEM
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 print("[Plaza Plus]: Starting GUI rendering...")
 if CoreGui:FindFirstChild("PlazaPlusGUI") then CoreGui:FindFirstChild("PlazaPlusGUI"):Destroy() end
 
@@ -593,22 +593,25 @@ ScreenGui.Parent=CoreGui
 local IsRunning=false
 local RunMode="Seller" -- "Seller","Sniper","Both"
 
--- Color palette
+-- Color palette - dark admin panel style
 local C={
-    BG=Color3.fromRGB(10,10,16),
-    Panel=Color3.fromRGB(18,18,28),
-    Card=Color3.fromRGB(26,26,40),
-    CardHover=Color3.fromRGB(32,32,50),
-    Border=Color3.fromRGB(48,48,72),
+    BG=Color3.fromRGB(7,8,12),
+    Panel=Color3.fromRGB(15,16,23),
+    Sidebar=Color3.fromRGB(10,11,17),
+    Header=Color3.fromRGB(9,10,15),
+    Card=Color3.fromRGB(21,22,32),
+    CardHover=Color3.fromRGB(28,30,42),
+    Border=Color3.fromRGB(35,37,50),
     Accent=Color3.fromRGB(99,102,241),
+    Accent2=Color3.fromRGB(34,197,184),
     AccentDim=Color3.fromRGB(60,63,160),
     Green=Color3.fromRGB(52,211,153),
     GreenDim=Color3.fromRGB(20,90,65),
     Red=Color3.fromRGB(239,68,68),
     Yellow=Color3.fromRGB(251,191,36),
-    Text=Color3.fromRGB(235,235,250),
-    Sub=Color3.fromRGB(130,130,165),
-    InputBG=Color3.fromRGB(13,13,22),
+    Text=Color3.fromRGB(238,241,248),
+    Sub=Color3.fromRGB(135,143,162),
+    InputBG=Color3.fromRGB(20,22,31),
 }
 
 local function Tw(obj,props,t,s)
@@ -674,29 +677,50 @@ local function Toggle(parent,pos,default)
         function(v) state=v; Upd() end
 end
 
--- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,660,0,540),UDim2.new(0.5,-330,0.5,-270),C.BG,14)
+-- â”€â”€ Main Window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+local Win=Frame(ScreenGui,UDim2.new(0,760,0,520),UDim2.new(0.5,-380,0.5,-260),C.BG,14)
 Win.ClipsDescendants=true
 do
-    local g=Instance.new("UIGradient"); g.Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(10,10,18)),ColorSequenceKeypoint.new(1,Color3.fromRGB(16,10,26))}); g.Rotation=135; g.Parent=Win
+    local g=Instance.new("UIGradient"); g.Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(14,15,22)),ColorSequenceKeypoint.new(0.55,Color3.fromRGB(7,8,12)),ColorSequenceKeypoint.new(1,Color3.fromRGB(3,4,7))}); g.Rotation=135; g.Parent=Win
     Stroke(Win,C.Border,1)
 end
 
+-- Admin sidebar inspired by the reference image
+local Sidebar=Frame(Win,UDim2.new(0,190,1,0),UDim2.new(0,0,0,0),C.Sidebar,0)
+Frame(Sidebar,UDim2.new(0,18,1,0),UDim2.new(1,-18,0,0),C.Sidebar,0)
+local Brand=Frame(Sidebar,UDim2.new(1,0,0,42),UDim2.new(0,0,0,0),C.Sidebar,0)
+Label(Brand,"PLAZA PLUS",15,C.Text,Enum.Font.GothamBold,Enum.TextXAlignment.Center)
+local Profile=Frame(Sidebar,UDim2.new(1,-24,0,94),UDim2.new(0,12,0,48),Color3.fromRGB(13,14,21),8)
+Stroke(Profile,C.Border,1)
+local Avatar=Instance.new("ImageLabel")
+Avatar.Size=UDim2.new(0,48,0,48); Avatar.Position=UDim2.new(0,10,0,10)
+Avatar.BackgroundColor3=C.Card; Avatar.BorderSizePixel=0
+Avatar.Image="rbxthumb://type=AvatarHeadShot&id="..LocalPlayer.UserId.."&w=150&h=150"
+Avatar.Parent=Profile; Corner(Avatar,24); Stroke(Avatar,C.Accent2,1)
+local pn=Label(Profile,LocalPlayer.DisplayName,13,C.Text,Enum.Font.GothamBold)
+pn.Position=UDim2.new(0,68,0,13); pn.Size=UDim2.new(1,-76,0,18); pn.TextTruncate=Enum.TextTruncate.AtEnd
+local pr=Label(Profile,"Guest",10,C.Sub,Enum.Font.Gotham)
+pr.Position=UDim2.new(0,68,0,32); pr.Size=UDim2.new(1,-76,0,14)
+local pid=Label(Profile,tostring(LocalPlayer.UserId),10,C.Sub,Enum.Font.Gotham)
+pid.Position=UDim2.new(0,68,0,48); pid.Size=UDim2.new(1,-76,0,14)
+
 -- Title bar
-local TBar=Frame(Win,UDim2.new(1,0,0,50),UDim2.new(0,0,0,0),Color3.fromRGB(14,14,24),0)
+local TBar=Frame(Win,UDim2.new(1,-190,0,50),UDim2.new(0,190,0,0),C.Header,0)
 do
-    local tl=Instance.new("TextLabel"); tl.Text="PLAZA PLUS"; tl.TextSize=15; tl.Font=Enum.Font.GothamBold; tl.TextColor3=C.Text; tl.BackgroundTransparency=1; tl.Position=UDim2.new(0,18,0,8); tl.Size=UDim2.new(0,160,0,20); tl.TextXAlignment=Enum.TextXAlignment.Left; tl.Parent=TBar
-    local sl=Instance.new("TextLabel"); sl.Text="Auto Seller & Sniper"; sl.TextSize=10; sl.Font=Enum.Font.Gotham; sl.TextColor3=C.Sub; sl.BackgroundTransparency=1; sl.Position=UDim2.new(0,18,0,28); sl.Size=UDim2.new(0,200,0,14); sl.TextXAlignment=Enum.TextXAlignment.Left; sl.Parent=TBar
+    local menu=Instance.new("TextLabel"); menu.Text="="; menu.TextSize=20; menu.Font=Enum.Font.GothamBold; menu.TextColor3=C.Sub; menu.BackgroundTransparency=1; menu.Position=UDim2.new(0,18,0,0); menu.Size=UDim2.new(0,24,1,0); menu.TextXAlignment=Enum.TextXAlignment.Left; menu.Parent=TBar
+    local tl=Instance.new("TextLabel"); tl.Text="Admin Panel"; tl.TextSize=15; tl.Font=Enum.Font.GothamBold; tl.TextColor3=C.Text; tl.BackgroundTransparency=1; tl.Position=UDim2.new(0,48,0,8); tl.Size=UDim2.new(0,160,0,20); tl.TextXAlignment=Enum.TextXAlignment.Left; tl.Parent=TBar
+    local sl=Instance.new("TextLabel"); sl.Text="Auto Seller & Sniper"; sl.TextSize=10; sl.Font=Enum.Font.Gotham; sl.TextColor3=C.Sub; sl.BackgroundTransparency=1; sl.Position=UDim2.new(0,48,0,28); sl.Size=UDim2.new(0,200,0,14); sl.TextXAlignment=Enum.TextXAlignment.Left; sl.Parent=TBar
     -- status dot
-    local dot=Frame(TBar,UDim2.new(0,8,0,8),UDim2.new(0,200,0,21),C.Sub,4)
+    local dot=Frame(TBar,UDim2.new(0,8,0,8),UDim2.new(0,220,0,21),C.Sub,4)
     -- close/min
-    local cBtn=Btn(TBar,"✕",UDim2.new(0,30,0,30),UDim2.new(1,-40,0.5,-15),Color3.fromRGB(60,18,18),C.Red)
+    local searchBtn=Btn(TBar,"?",UDim2.new(0,30,0,30),UDim2.new(1,-112,0.5,-15),C.Panel,C.Sub)
+    local cBtn=Btn(TBar,"X",UDim2.new(0,30,0,30),UDim2.new(1,-40,0.5,-15),Color3.fromRGB(60,18,18),C.Red)
     cBtn.MouseButton1Click:Connect(function() Win.Visible=false end)
-    local mBtn=Btn(TBar,"─",UDim2.new(0,30,0,30),UDim2.new(1,-76,0.5,-15),Color3.fromRGB(30,30,46),C.Sub)
+    local mBtn=Btn(TBar,"-",UDim2.new(0,30,0,30),UDim2.new(1,-76,0.5,-15),C.Panel,C.Sub)
     local minimized=false
     mBtn.MouseButton1Click:Connect(function()
         minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,660,0,50) or UDim2.new(0,660,0,540)},0.2)
+        Tw(Win,{Size=minimized and UDim2.new(0,760,0,50) or UDim2.new(0,760,0,520)},0.2)
     end)
     -- Running indicator
     task.spawn(function()
@@ -707,25 +731,25 @@ do
 end
 
 -- Tab row
-local TabRow=Frame(Win,UDim2.new(1,0,0,38),UDim2.new(0,0,0,50),Color3.fromRGB(13,13,22),0)
-local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),C.Border,0)
+local TabRow=Frame(Sidebar,UDim2.new(1,-24,1,-158),UDim2.new(0,12,0,152),C.Sidebar,0)
+TabRow.BackgroundTransparency=1
 
 local function MakeTabBtn(text,xOff,active)
-    local t=Instance.new("TextButton"); t.Size=UDim2.new(0,110,0,30); t.Position=UDim2.new(0,xOff,0.5,-15)
-    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(22,22,36); t.TextColor3=active and C.Text or C.Sub
-    t.Text=text; t.TextSize=12; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.Parent=TabRow
+    local t=Instance.new("TextButton"); t.Size=UDim2.new(1,0,0,38); t.Position=UDim2.new(0,0,0,xOff)
+    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(0,0,0); t.BackgroundTransparency=active and 0 or 1; t.TextColor3=active and C.Text or C.Sub
+    t.Text=text; t.TextSize=12; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.TextXAlignment=Enum.TextXAlignment.Left; t.Parent=TabRow
     Corner(t,7); return t
 end
 
-local SelTab=MakeTabBtn("🏪  Seller",10,true)
-local SniTab=MakeTabBtn("🎯  Sniper",128,false)
-local CfgTab=MakeTabBtn("⚙  Settings",246,false)
+local SelTab=MakeTabBtn("  $   Seller",0,true)
+local SniTab=MakeTabBtn("  #   Sniper",44,false)
+local CfgTab=MakeTabBtn("  @   Settings",88,false)
 
 -- Content host
-local ContentArea=Frame(Win,UDim2.new(1,-20,1,-140),UDim2.new(0,10,0,96),C.BG,0)
+local ContentArea=Frame(Win,UDim2.new(1,-210,1,-118),UDim2.new(0,200,0,62),C.BG,0)
 ContentArea.BackgroundTransparency=1
 
--- ── Panels ───────────────────────────────
+-- â”€â”€ Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 local function Panel()
     local p=Frame(ContentArea,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.BG,0)
     p.BackgroundTransparency=1; return p
@@ -737,30 +761,30 @@ local CfgPanel=Panel(); CfgPanel.Visible=false
 
 local function SwitchTab(panel,activeTab)
     SelPanel.Visible=panel==SelPanel; SniPanel.Visible=panel==SniPanel; CfgPanel.Visible=panel==CfgPanel
-    for _,t in pairs({SelTab,SniTab,CfgTab}) do Tw(t,{BackgroundColor3=Color3.fromRGB(22,22,36),TextColor3=C.Sub}) end
-    Tw(activeTab,{BackgroundColor3=C.Accent,TextColor3=C.Text})
+    for _,t in pairs({SelTab,SniTab,CfgTab}) do Tw(t,{BackgroundColor3=Color3.fromRGB(0,0,0),BackgroundTransparency=1,TextColor3=C.Sub}) end
+    Tw(activeTab,{BackgroundColor3=C.Accent,BackgroundTransparency=0,TextColor3=C.Text})
 end
 SelTab.MouseButton1Click:Connect(function() SwitchTab(SelPanel,SelTab) end)
 SniTab.MouseButton1Click:Connect(function() SwitchTab(SniPanel,SniTab) end)
 CfgTab.MouseButton1Click:Connect(function() SwitchTab(CfgPanel,CfgTab) end)
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SHARED: Item card builder
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local function ItemCard(parent,name,price,extra,onRemove)
     local card=Frame(parent,UDim2.new(1,0,0,46),UDim2.new(0,0,0,0),C.Card,8)
     Stroke(card,C.Border,1)
     local nl=Instance.new("TextLabel"); nl.Text=name; nl.TextSize=12; nl.Font=Enum.Font.GothamBold; nl.TextColor3=C.Text; nl.BackgroundTransparency=1; nl.Position=UDim2.new(0,10,0,6); nl.Size=UDim2.new(1,-50,0,18); nl.TextXAlignment=Enum.TextXAlignment.Left; nl.Parent=card; nl.TextTruncate=Enum.TextTruncate.AtEnd
-    local dl=Instance.new("TextLabel"); dl.Text="💎 "..tostring(price)..(extra~="" and "  ·  "..extra or ""); dl.TextSize=11; dl.Font=Enum.Font.Gotham; dl.TextColor3=C.Sub; dl.BackgroundTransparency=1; dl.Position=UDim2.new(0,10,0,26); dl.Size=UDim2.new(1,-50,0,14); dl.TextXAlignment=Enum.TextXAlignment.Left; dl.Parent=card
+    local dl=Instance.new("TextLabel"); dl.Text="$ "..tostring(price)..(extra~="" and "  -  "..extra or ""); dl.TextSize=11; dl.Font=Enum.Font.Gotham; dl.TextColor3=C.Sub; dl.BackgroundTransparency=1; dl.Position=UDim2.new(0,10,0,26); dl.Size=UDim2.new(1,-50,0,14); dl.TextXAlignment=Enum.TextXAlignment.Left; dl.Parent=card
     -- Live badge shown when script is running
-    local liveBadge=Instance.new("TextLabel"); liveBadge.Text="● LIVE"; liveBadge.TextSize=9; liveBadge.Font=Enum.Font.GothamBold; liveBadge.TextColor3=C.Green; liveBadge.BackgroundTransparency=1; liveBadge.Position=UDim2.new(1,-70,0,6); liveBadge.Size=UDim2.new(0,36,0,12); liveBadge.TextXAlignment=Enum.TextXAlignment.Right; liveBadge.Parent=card; liveBadge.Visible=false
+    local liveBadge=Instance.new("TextLabel"); liveBadge.Text="LIVE"; liveBadge.TextSize=9; liveBadge.Font=Enum.Font.GothamBold; liveBadge.TextColor3=C.Green; liveBadge.BackgroundTransparency=1; liveBadge.Position=UDim2.new(1,-70,0,6); liveBadge.Size=UDim2.new(0,36,0,12); liveBadge.TextXAlignment=Enum.TextXAlignment.Right; liveBadge.Parent=card; liveBadge.Visible=false
     task.spawn(function()
         while card.Parent do
             liveBadge.Visible=IsRunning
             task.wait(1)
         end
     end)
-    local rb=Instance.new("TextButton"); rb.Size=UDim2.new(0,26,0,26); rb.Position=UDim2.new(1,-34,0.5,-13); rb.BackgroundColor3=Color3.fromRGB(50,15,15); rb.TextColor3=C.Red; rb.Text="✕"; rb.TextSize=12; rb.Font=Enum.Font.GothamBold; rb.BorderSizePixel=0; rb.AutoButtonColor=false; rb.Parent=card; Corner(rb,6)
+    local rb=Instance.new("TextButton"); rb.Size=UDim2.new(0,26,0,26); rb.Position=UDim2.new(1,-34,0.5,-13); rb.BackgroundColor3=Color3.fromRGB(50,15,15); rb.TextColor3=C.Red; rb.Text="X"; rb.TextSize=12; rb.Font=Enum.Font.GothamBold; rb.BorderSizePixel=0; rb.AutoButtonColor=false; rb.Parent=card; Corner(rb,6)
     rb.MouseButton1Click:Connect(function()
         card:Destroy()
         -- Also wipe from blacklist so re-adding works cleanly
@@ -770,9 +794,9 @@ local function ItemCard(parent,name,price,extra,onRemove)
     return card
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SELLER PANEL
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local SLeft=Frame(SelPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
 local SRight=Frame(SelPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
 
@@ -787,7 +811,7 @@ do
     -- Restore saved
     for _,item in pairs(Cfg.SellerItems or {}) do
         SellerItemData[item.Name]=item
-        local ext=(item.Amount and "×"..item.Amount or "×max")..(item.Class and " · "..item.Class or "")..(item.Priority and " ⚡" or "")
+        local ext=(item.Amount and "Ã—"..item.Amount or "Ã—max")..(item.Class and " Â· "..item.Class or "")..(item.Priority and " âš¡" or "")
         ItemCard(scroll,item.Name,item.Price,ext,function()
             SellerItemData[item.Name]=nil
             local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
@@ -798,11 +822,11 @@ do
     local function FLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,14),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
     FLabel(SRight,"Item Name",8)
     local nameIn=Input(SRight,"e.g. Spring Bluebell Token",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,24))
-    FLabel(SRight,"Price  (2 · 1m · +20% · -5%)",58)
+    FLabel(SRight,"Price  (2 Â· 1m Â· +20% Â· -5%)",58)
     local priceIn=Input(SRight,"e.g. 2  or  1m  or  +20%",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,74))
     FLabel(SRight,"Amount  (blank = sell all)",108)
     local amtIn=Input(SRight,"blank = max available",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,124))
-    FLabel(SRight,"Class  (Misc, Pet … blank=auto)",158)
+    FLabel(SRight,"Class  (Misc, Pet â€¦ blank=auto)",158)
     local classIn=Input(SRight,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
 
     -- Type row: Rainbow / Golden / Shiny toggles
@@ -832,33 +856,33 @@ do
     local _,getPrio,_,setPrio=Toggle(prioRow,UDim2.new(1,-46,0.5,-11),false)
 
     -- Quick-add: All Huges button
-    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,322),Color3.fromRGB(40,30,10),C.Yellow)
+    local quickBtn=Btn(SRight,"âš¡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,322),Color3.fromRGB(40,30,10),C.Yellow)
     quickBtn.TextSize=11
 
-    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,354),C.Accent)
+    local addBtn=Btn(SRight,"ï¼‹ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,354),C.Accent)
     local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,392); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
 
     local function DoAddItem(name, price, amt, cls, prio, rainbow, golden, shiny, allTypes)
-        if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
+        if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="âš  Name and price required"; task.delay(2,function() statusL.Text="" end); return end
         -- Build unique key including type so e.g. "Rainbow Huge Cat" and "Huge Cat" can both exist
         local typePrefix = (shiny and "Shiny " or "")..(rainbow and "Rainbow " or "")..(golden and "Golden " or "")
         local displayKey = typePrefix..name
-        if SellerItemData[displayKey] then statusL.TextColor3=C.Red; statusL.Text="⚠ Already in list"; task.delay(2,function() statusL.Text="" end); return end
+        if SellerItemData[displayKey] then statusL.TextColor3=C.Red; statusL.Text="âš  Already in list"; task.delay(2,function() statusL.Text="" end); return end
         local priceVal=tonumber(price) or price
         local item={Name=name, Price=priceVal, Amount=amt, Class=cls, Priority=prio,
                     Rainbow=rainbow, Golden=golden, Shiny=shiny, AllTypes=allTypes,
                     _displayKey=displayKey}
         SellerItemData[displayKey]=item
         local typeStr=(allTypes and "all-types" or typePrefix~="" and typePrefix:gsub(" $","") or "normal")
-        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "").." · "..typeStr..(prio and " ⚡" or "")
+        local ext=(amt and "Ã—"..amt or "Ã—max")..(cls and " Â· "..cls or "").." Â· "..typeStr..(prio and " âš¡" or "")
         ItemCard(scroll,displayKey,priceVal,ext,function()
             SellerItemData[displayKey]=nil
             local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
         end)
         if IsRunning then
-            statusL.TextColor3=C.Yellow; statusL.Text="⚡ Added live — listing next cycle"
+            statusL.TextColor3=C.Yellow; statusL.Text="âš¡ Added live â€” listing next cycle"
         else
-            statusL.TextColor3=C.Green; statusL.Text="✓ Added: "..displayKey
+            statusL.TextColor3=C.Green; statusL.Text="âœ“ Added: "..displayKey
         end
         task.delay(2,function() statusL.Text="" end)
         local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
@@ -877,14 +901,14 @@ do
     -- Quick-add All Huges
     quickBtn.MouseButton1Click:Connect(function()
         DoAddItem("All Huges","+20%",nil,nil,false,false,false,false,true)
-        statusL.TextColor3=C.Yellow; statusL.Text="⚡ All Huges added at +20% RAP"
+        statusL.TextColor3=C.Yellow; statusL.Text="âš¡ All Huges added at +20% RAP"
         task.delay(2,function() statusL.Text="" end)
     end)
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SNIPER PANEL  (two sub-tabs)
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local SNLeft=Frame(SniPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
 local SNRight=Frame(SniPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
 
@@ -892,12 +916,12 @@ local SNRight=Frame(SniPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Pane
 local subTabBar=Frame(SNRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,6),Color3.fromRGB(20,20,32),6)
 local function SubTab(txt,xOff,active)
     local t=Instance.new("TextButton"); t.Size=UDim2.new(0.5,-2,1,-4); t.Position=UDim2.new(xOff,2,0,2)
-    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(28,28,44); t.TextColor3=active and C.Text or C.Sub
+    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(0,0,0); t.BackgroundTransparency=active and 0 or 1; t.TextColor3=active and C.Text or C.Sub
     t.Text=txt; t.TextSize=11; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.Parent=subTabBar
     Corner(t,5); return t
 end
-local boothSubTab=SubTab("🔍 Booth",0,true)
-local termSubTab=SubTab("📡 Terminal",0.5,false)
+local boothSubTab=SubTab("ðŸ” Booth",0,true)
+local termSubTab=SubTab("ðŸ“¡ Terminal",0.5,false)
 
 -- Booth sniper form
 local boothForm=Frame(SNRight,UDim2.new(1,0,1,-40),UDim2.new(0,0,0,40),C.Panel,0); boothForm.BackgroundTransparency=1
@@ -920,13 +944,13 @@ end)
 do
     -- Booth items header
     local bh=Frame(SNLeft,UDim2.new(1,-16,0,16),UDim2.new(0,8,0,6),C.Panel,0); bh.BackgroundTransparency=1
-    Label(bh,"🔍 Booth Targets",11,C.Sub,Enum.Font.GothamBold)
+    Label(bh,"ðŸ” Booth Targets",11,C.Sub,Enum.Font.GothamBold)
     local bScroll=Instance.new("ScrollingFrame"); bScroll.Size=UDim2.new(1,-16,0.48,-28); bScroll.Position=UDim2.new(0,8,0,24); bScroll.BackgroundTransparency=1; bScroll.BorderSizePixel=0; bScroll.ScrollBarThickness=3; bScroll.ScrollBarImageColor3=C.Accent; bScroll.CanvasSize=UDim2.new(0,0,0,0); bScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; bScroll.Parent=SNLeft
     local bLayout=Instance.new("UIListLayout"); bLayout.Padding=UDim.new(0,3); bLayout.Parent=bScroll
 
     -- Terminal items header
     local th=Frame(SNLeft,UDim2.new(1,-16,0,16),UDim2.new(0,8,0.5,4),C.Panel,0); th.BackgroundTransparency=1
-    Label(th,"📡 Terminal Targets",11,C.Sub,Enum.Font.GothamBold)
+    Label(th,"ðŸ“¡ Terminal Targets",11,C.Sub,Enum.Font.GothamBold)
     local tScroll=Instance.new("ScrollingFrame"); tScroll.Size=UDim2.new(1,-16,0.48,-28); tScroll.Position=UDim2.new(0,8,0.5,22); tScroll.BackgroundTransparency=1; tScroll.BorderSizePixel=0; tScroll.ScrollBarThickness=3; tScroll.ScrollBarImageColor3=C.Yellow; tScroll.CanvasSize=UDim2.new(0,0,0,0); tScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; tScroll.Parent=SNLeft
     local tLayout=Instance.new("UIListLayout"); tLayout.Padding=UDim.new(0,3); tLayout.Parent=tScroll
 
@@ -956,10 +980,10 @@ do
         end)
     end
 
-    -- ── BOOTH FORM ──────────────────────────
+    -- â”€â”€ BOOTH FORM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function FLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,13),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
 
-    FLabel(boothForm,"Item Name  (All Huges, Huge Cat…)",4)
+    FLabel(boothForm,"Item Name  (All Huges, Huge Catâ€¦)",4)
     local sNameIn=Input(boothForm,"e.g. All Huges",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,19))
     FLabel(boothForm,"Max Price  (flat or %)",51)
     local sPriceIn=Input(boothForm,"e.g. 15m  or  50%  or  +2%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,66))
@@ -972,15 +996,15 @@ do
     local dmLabel=Instance.new("TextLabel"); dmLabel.Text="Anti-Manip"; dmLabel.TextSize=11; dmLabel.Font=Enum.Font.Gotham; dmLabel.TextColor3=C.Text; dmLabel.BackgroundTransparency=1; dmLabel.Position=UDim2.new(0.5,50,0,0); dmLabel.Size=UDim2.new(0.4,0,1,0); dmLabel.TextXAlignment=Enum.TextXAlignment.Left; dmLabel.Parent=atRow
     local _,getDetect,_,setDetect=Toggle(atRow,UDim2.new(1,-46,0.5,-11),false)
 
-    local sAddBtn=Btn(boothForm,"＋ Add Booth Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,175),C.Accent)
+    local sAddBtn=Btn(boothForm,"ï¼‹ Add Booth Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,175),C.Accent)
     sAddBtn.TextSize=11
     local sStatusL=Instance.new("TextLabel"); sStatusL.Size=UDim2.new(1,-16,0,16); sStatusL.Position=UDim2.new(0,8,0,209); sStatusL.BackgroundTransparency=1; sStatusL.TextColor3=C.Green; sStatusL.Font=Enum.Font.Gotham; sStatusL.TextSize=10; sStatusL.Text=""; sStatusL.TextXAlignment=Enum.TextXAlignment.Center; sStatusL.Parent=boothForm
 
     sAddBtn.MouseButton1Click:Connect(function()
         local name=sNameIn.Text:match("^%s*(.-)%s*$")
         local price=sPriceIn.Text:match("^%s*(.-)%s*$")
-        if name=="" or price=="" then sStatusL.TextColor3=C.Red; sStatusL.Text="⚠ Name and price required"; task.delay(2,function() sStatusL.Text="" end); return end
-        if SniperItemData[name] then sStatusL.TextColor3=C.Red; sStatusL.Text="⚠ Already in list"; task.delay(2,function() sStatusL.Text="" end); return end
+        if name=="" or price=="" then sStatusL.TextColor3=C.Red; sStatusL.Text="âš  Name and price required"; task.delay(2,function() sStatusL.Text="" end); return end
+        if SniperItemData[name] then sStatusL.TextColor3=C.Red; sStatusL.Text="âš  Already in list"; task.delay(2,function() sStatusL.Text="" end); return end
         local priceVal=tonumber(price) or price
         local limit=sLimitIn.Text~="" and tonumber(sLimitIn.Text) or nil
         local allTypes=getAllTypes(); local detect=getDetect()
@@ -993,18 +1017,18 @@ do
         end)
         sNameIn.Text=""; sPriceIn.Text=""; sLimitIn.Text=""; setAllTypes(false); setDetect(false)
         sStatusL.TextColor3=IsRunning and C.Yellow or C.Green
-        sStatusL.Text=IsRunning and "⚡ Added live" or "✓ Added"
+        sStatusL.Text=IsRunning and "âš¡ Added live" or "âœ“ Added"
         task.delay(2,function() sStatusL.Text="" end)
         local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
     end)
 
-    -- ── TERMINAL FORM ───────────────────────
+    -- â”€â”€ TERMINAL FORM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function TLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,13),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
 
     -- Info box
     local infoBox=Frame(termForm,UDim2.new(1,-16,0,36),UDim2.new(0,8,0,4),Color3.fromRGB(20,30,20),8)
     Stroke(infoBox,C.Green,1)
-    local infoL=Instance.new("TextLabel"); infoL.Text="📡 Terminal searches ALL servers\nfor the cheapest listings globally"; infoL.TextSize=10; infoL.Font=Enum.Font.Gotham; infoL.TextColor3=C.Green; infoL.BackgroundTransparency=1; infoL.Position=UDim2.new(0,8,0,0); infoL.Size=UDim2.new(1,-16,1,0); infoL.TextXAlignment=Enum.TextXAlignment.Left; infoL.TextWrapped=true; infoL.Parent=infoBox
+    local infoL=Instance.new("TextLabel"); infoL.Text="ðŸ“¡ Terminal searches ALL servers\nfor the cheapest listings globally"; infoL.TextSize=10; infoL.Font=Enum.Font.Gotham; infoL.TextColor3=C.Green; infoL.BackgroundTransparency=1; infoL.Position=UDim2.new(0,8,0,0); infoL.Size=UDim2.new(1,-16,1,0); infoL.TextXAlignment=Enum.TextXAlignment.Left; infoL.TextWrapped=true; infoL.Parent=infoBox
 
     TLabel(termForm,"Item Name  (exact name required)",46)
     local tNameIn=Input(termForm,"e.g. Huge Night Terror Cat",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,61))
@@ -1017,15 +1041,15 @@ do
     Label(cvRow,"Use Cosmic Values",11,C.Text,Enum.Font.Gotham)
     local _,getCosmicVal,_,setCosmicVal=Toggle(cvRow,UDim2.new(1,-46,0.5,-11),false)
 
-    local tAddBtn=Btn(termForm,"＋ Add Terminal Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,218),C.Yellow,Color3.fromRGB(30,20,5))
+    local tAddBtn=Btn(termForm,"ï¼‹ Add Terminal Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,218),C.Yellow,Color3.fromRGB(30,20,5))
     tAddBtn.TextSize=11; tAddBtn.TextColor3=Color3.fromRGB(40,28,5)
     local tStatusL=Instance.new("TextLabel"); tStatusL.Size=UDim2.new(1,-16,0,16); tStatusL.Position=UDim2.new(0,8,0,252); tStatusL.BackgroundTransparency=1; tStatusL.TextColor3=C.Green; tStatusL.Font=Enum.Font.Gotham; tStatusL.TextSize=10; tStatusL.Text=""; tStatusL.TextXAlignment=Enum.TextXAlignment.Center; tStatusL.Parent=termForm
 
     tAddBtn.MouseButton1Click:Connect(function()
         local name=tNameIn.Text:match("^%s*(.-)%s*$")
         local price=tPriceIn.Text:match("^%s*(.-)%s*$")
-        if name=="" or price=="" then tStatusL.TextColor3=C.Red; tStatusL.Text="⚠ Name and price required"; task.delay(2,function() tStatusL.Text="" end); return end
-        if TerminalItemData[name] then tStatusL.TextColor3=C.Red; tStatusL.Text="⚠ Already in list"; task.delay(2,function() tStatusL.Text="" end); return end
+        if name=="" or price=="" then tStatusL.TextColor3=C.Red; tStatusL.Text="âš  Name and price required"; task.delay(2,function() tStatusL.Text="" end); return end
+        if TerminalItemData[name] then tStatusL.TextColor3=C.Red; tStatusL.Text="âš  Already in list"; task.delay(2,function() tStatusL.Text="" end); return end
         local priceVal=tonumber(price) or price
         local limit=tLimitIn.Text~="" and tonumber(tLimitIn.Text) or nil
         local cosmic=getCosmicVal()
@@ -1038,15 +1062,15 @@ do
         end)
         tNameIn.Text=""; tPriceIn.Text=""; tLimitIn.Text=""; setCosmicVal(false)
         tStatusL.TextColor3=IsRunning and C.Yellow or C.Green
-        tStatusL.Text=IsRunning and "⚡ Added live — searching now" or "✓ Added"
+        tStatusL.Text=IsRunning and "âš¡ Added live â€” searching now" or "âœ“ Added"
         task.delay(2,function() tStatusL.Text="" end)
         local t={}; for _,v in pairs(TerminalItemData) do table.insert(t,v) end; Cfg.TerminalItems=t; SaveCfg()
     end)
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SETTINGS PANEL
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 do
     local sf=Frame(CfgPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,10)
     local function Row(label,y)
@@ -1097,18 +1121,18 @@ do
     whIn.FocusLost:Connect(function() Cfg.WebhookURL=whIn.Text; SaveCfg() end)
 end
 
--- ══════════════════════════════════════════
---  BOTTOM BAR — Launch / Stop
--- ══════════════════════════════════════════
-local BBar=Frame(Win,UDim2.new(1,0,0,48),UDim2.new(0,0,1,-48),Color3.fromRGB(13,13,22),0)
-local launchBtn=Btn(BBar,"▶  START",UDim2.new(0,140,0,32),UDim2.new(0,12,0.5,-16),C.Green,Color3.fromRGB(5,30,18))
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+--  BOTTOM BAR â€” Launch / Stop
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+local BBar=Frame(Win,UDim2.new(1,-190,0,48),UDim2.new(0,190,1,-48),C.Header,0)
+local launchBtn=Btn(BBar,">  START",UDim2.new(0,140,0,32),UDim2.new(0,12,0.5,-16),C.Green,Color3.fromRGB(5,30,18))
 launchBtn.TextColor3=Color3.fromRGB(5,40,22)
-local stopBtn=Btn(BBar,"■  STOP",UDim2.new(0,120,0,32),UDim2.new(0,160,0.5,-16),Color3.fromRGB(80,20,20),C.Red)
+local stopBtn=Btn(BBar,"[] STOP",UDim2.new(0,120,0,32),UDim2.new(0,160,0.5,-16),Color3.fromRGB(80,20,20),C.Red)
 local botStatus=Instance.new("TextLabel"); botStatus.Size=UDim2.new(1,-310,1,0); botStatus.Position=UDim2.new(0,295,0,0); botStatus.BackgroundTransparency=1; botStatus.TextColor3=C.Sub; botStatus.Font=Enum.Font.Gotham; botStatus.TextSize=11; botStatus.Text="Configure items, then press START"; botStatus.TextXAlignment=Enum.TextXAlignment.Left; botStatus.Parent=BBar
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SELLER RUNTIME
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local SellerRunning=false
 local SellerThread
 
@@ -1148,21 +1172,21 @@ local function RunSeller()
         repeat task.wait() until ClaimedBooths[LocalPlayer] or (os.time()-timeout2)>15
     end
     if not ClaimedBooths[LocalPlayer] then
-        warn("[Plaza Plus]: Could not claim booth — all booths may be taken. Waiting 10s...")
-        botStatus.TextColor3=C.Red; botStatus.Text="⚠ Could not claim booth — retrying in 10s"
+        warn("[Plaza Plus]: Could not claim booth â€” all booths may be taken. Waiting 10s...")
+        botStatus.TextColor3=C.Red; botStatus.Text="âš  Could not claim booth â€” retrying in 10s"
         task.wait(10)
         ClaimBooth()
         repeat task.wait() until ClaimedBooths[LocalPlayer] or (os.time()-timeout)>30
     end
     if not ClaimedBooths[LocalPlayer] then
         warn("[Plaza Plus]: Booth claim failed completely.")
-        botStatus.TextColor3=C.Red; botStatus.Text="⚠ Booth claim failed! Try a different server."
+        botStatus.TextColor3=C.Red; botStatus.Text="âš  Booth claim failed! Try a different server."
         SellerRunning=false; IsRunning=false
         Tw(launchBtn,{BackgroundColor3=C.Green})
         return
     end
     warn("[Plaza Plus]: Booth claimed, listing items...")
-    botStatus.Text="🏪 Seller running..."; botStatus.TextColor3=C.Green
+    botStatus.Text="ðŸª Seller running..."; botStatus.TextColor3=C.Green
 
     -- Sold notification
     Library.Network.Fired("Booths: Add History"):Connect(function(Info)
@@ -1179,7 +1203,7 @@ local function RunSeller()
         end
     end)
 
-    -- Single flat listing function — lists ONE slot for ONE item then returns
+    -- Single flat listing function â€” lists ONE slot for ONE item then returns
     -- so the outer loop can immediately check for newly added items
     local function TryListItem(name, data)
         local maxSlots = (PlayerSave and PlayerSave.Get() and PlayerSave.Get().BoothSlots) or 8
@@ -1233,7 +1257,7 @@ local function RunSeller()
         if data.Amount and itemSlots and itemSlots >= data.Amount then return end
         if Amount <= 0 then return end
 
-        print("[Plaza Plus]: Listing "..name.." × "..Amount.." for "..tostring(PD.RealPrice))
+        print("[Plaza Plus]: Listing "..name.." Ã— "..Amount.." for "..tostring(PD.RealPrice))
         task.wait(math.random(2, 5))
 
         local fails = 0
@@ -1243,7 +1267,7 @@ local function RunSeller()
             local ok = Library.Network.Invoke("Booths_CreateListing", UID, math.floor(PD.RealPrice), math.min(Amount, MaxAmount))
             repeat task.wait() until ok or (os.time()-t2) >= 10
             if ok then
-                warn("[Plaza Plus]: Listed "..name.." × "..math.min(Amount,MaxAmount))
+                warn("[Plaza Plus]: Listed "..name.." Ã— "..math.min(Amount,MaxAmount))
                 Amount = Amount - MaxAmount
             else
                 fails = fails + 1
@@ -1260,7 +1284,7 @@ local function RunSeller()
             local usedSlots = FindItemsInBooth() or 0
 
             if usedSlots < maxSlots then
-                -- Rebuild list fresh every tick — new items added via GUI are picked up instantly
+                -- Rebuild list fresh every tick â€” new items added via GUI are picked up instantly
                 local priority, normal = {}, {}
                 for _, item in pairs(Cfg.SellerItems or {}) do
                     if item.Priority then table.insert(priority, item)
@@ -1277,7 +1301,7 @@ local function RunSeller()
                     TryListItem(item.Name, item)
                 end
             else
-                -- Booth full — just wait and recheck
+                -- Booth full â€” just wait and recheck
                 task.wait(5)
             end
 
@@ -1291,22 +1315,22 @@ local function RunSeller()
     end)
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  SNIPER RUNTIME
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 local SniperRunning=false
 
 local function RunSniper()
     SniperRunning=true
-    botStatus.Text="🎯 Sniper running..."; botStatus.TextColor3=C.Yellow
+    botStatus.Text="ðŸŽ¯ Sniper running..."; botStatus.TextColor3=C.Yellow
 
     -- Print what we're sniping
     warn("[Plaza Plus]: Sniper started. Watching for:")
     for _,item in pairs(Cfg.SniperItems or {}) do
-        warn("  → "..tostring(item.Name).." at price: "..tostring(item.Price))
+        warn("  â†’ "..tostring(item.Name).." at price: "..tostring(item.Price))
     end
 
-    -- FindInfo cache — rebuilt each cycle so newly added snipe targets work live
+    -- FindInfo cache â€” rebuilt each cycle so newly added snipe targets work live
     local FindInfoCache={}
 
     local function GetFindInfo(item)
@@ -1362,7 +1386,7 @@ local function RunSniper()
                     if item.InventoryLimit then buyAmt=math.min(buyAmt,item.InventoryLimit-(FindItem(FI,true) or 0)) end
                     if buyAmt<=0 then --continue end
 
-                    warn("[Plaza Plus]: Sniping ×"..buyAmt.." "..CI.Display)
+                    warn("[Plaza Plus]: Sniping Ã—"..buyAmt.." "..CI.Display)
 
                     -- Move to booth interact point
                     local BoothModel=BoothsInteractive[BoothID]
@@ -1394,7 +1418,7 @@ local function RunSniper()
         end
     end
 
-    -- ── Terminal Search runtime ──────────────
+    -- â”€â”€ Terminal Search runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local TerminalServers={}
     local Values={}
 
@@ -1441,7 +1465,7 @@ local function RunSniper()
         if not placeOk then return end
         if Cfg.OnlyPro and FoundServer["place_id"]~=PS99.Pro then return end
 
-        warn("[Plaza Plus Terminal]: Found "..tostring(SearchQuery.id).." — teleporting to buy...")
+        warn("[Plaza Plus Terminal]: Found "..tostring(SearchQuery.id).." â€” teleporting to buy...")
         table.insert(TerminalServers,{PlaceID=FoundServer["place_id"],JobID=FoundServer["job_id"],Item=item})
     end
 
@@ -1498,7 +1522,7 @@ local function RunSniper()
         end
     end)
 
-    -- ── Booth scanner loop ───────────────────
+    -- â”€â”€ Booth scanner loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     task.spawn(function()
         while SniperRunning do
             if Booths then
@@ -1536,9 +1560,9 @@ local function RunSniper()
     end)
 end
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  LAUNCH / STOP BUTTONS
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 launchBtn.MouseButton1Click:Connect(function()
     if IsRunning then return end
     local mode = Cfg.Mode or "Seller"
@@ -1547,13 +1571,13 @@ launchBtn.MouseButton1Click:Connect(function()
 
     if (mode=="Seller" or mode=="Both") and #sellerItems==0 then
         botStatus.TextColor3=C.Red
-        botStatus.Text="⚠ Add items to the Seller tab first!"
+        botStatus.Text="âš  Add items to the Seller tab first!"
         task.delay(3,function() botStatus.TextColor3=C.Sub; botStatus.Text="Configure items, then press START" end)
         return
     end
     if (mode=="Sniper" or mode=="Both") and #sniperItems==0 then
         botStatus.TextColor3=C.Red
-        botStatus.Text="⚠ Add targets to the Sniper tab first!"
+        botStatus.Text="âš  Add targets to the Sniper tab first!"
         task.delay(3,function() botStatus.TextColor3=C.Sub; botStatus.Text="Configure items, then press START" end)
         return
     end
@@ -1561,7 +1585,7 @@ launchBtn.MouseButton1Click:Connect(function()
     IsRunning=true
     Tw(launchBtn,{BackgroundColor3=C.GreenDim})
     botStatus.TextColor3=C.Green
-    botStatus.Text="⏳ Starting "..mode.." mode..."
+    botStatus.Text="â³ Starting "..mode.." mode..."
 
     if mode=="Seller" or mode=="Both" then
         task.spawn(RunSeller)
@@ -1582,9 +1606,9 @@ stopBtn.MouseButton1Click:Connect(function()
     warn("[Plaza Plus]: Stopped by user.")
 end)
 
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 --  DRAG + TOGGLE
--- ══════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 do
     local drag,ds,sp=false,nil,nil
     TBar.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=true; ds=i.Position; sp=Win.Position end end)
@@ -1595,7 +1619,7 @@ UserInputService.InputBegan:Connect(function(i,gpe) if not gpe and i.KeyCode==En
 
 if not table.find({PS99.Normal,PS99.Pro,PETSGO.Normal,PETSGO.Pro},game.PlaceId) then
     botStatus.TextColor3=C.Red
-    botStatus.Text="⚠ Wrong game! Go to PS99 or PETS GO Trading Plaza."
+    botStatus.Text="âš  Wrong game! Go to PS99 or PETS GO Trading Plaza."
 end
 
 print("[Plaza Plus GUI]: Ready! Press RightShift to toggle.")
