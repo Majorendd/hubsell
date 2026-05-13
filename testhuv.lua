@@ -245,7 +245,7 @@ pcall(function()
                 if tostring(C):find(Name) then found=true end
             end
         end
-        if not found then Classes[Name]=nil; --continue end
+        if not found then Classes[Name]=nil; continue end
         if Name=="Misc" or Name=="Card" then DirClasses[Name]=Name.."Items"
         elseif Name=="Lootbox" or Name=="Box" then DirClasses[Name]=Name.."es"
         else DirClasses[Name]=Name.."s" end
@@ -257,14 +257,14 @@ pcall(function()
             local mod = dir:FindFirstChild(DirClasses[Class])
             if not mod then return end
             for Item, Info in next, require(mod) do
-                if type(Info) ~= "table" then --continue end
+                if type(Info) ~= "table" then continue end
                 if Info.DisplayName and type(Info.DisplayName)=="function" then
                     for i=(Info.BaseTier or 1),(Info.MaxTier or 1) do
                         ItemList[Class][Info.DisplayName(i)] = {ID=Item,Display=Info.DisplayName(i),Power=Info.Power and Info.Power(i),Rarity=Info.Rarity and Info.Rarity(i),Tier=i,Icon=type(Info.Icon)=="function" and Info.Icon(i) or Info.Icon}
                     end
                 elseif Info.Tiers and type(Info.Tiers) == "table" then
                     for i=1,#Info.Tiers do
-                        if type(Info.Tiers[i]) ~= "table" then --continue end
+                        if type(Info.Tiers[i]) ~= "table" then continue end
                         local Disp,Icon,Rar,Pow
                         if Info.Tiers[i].Effect and Info.Tiers[i].Effect.Type and Info.Tiers[i].Effect.Type.Tiers and Info.Tiers[i].Effect.Type.Tiers[i] then
                             local T=Info.Tiers[i].Effect.Type.Tiers[i]
@@ -373,7 +373,7 @@ local function FindItemsInBooth(Name,Class)
     for _,Users in next, Booths do
         if type(Users) == "table" then
             for Username,Booth in next, Users do
-                if type(Booth) ~= "table" then --continue end
+                if type(Booth) ~= "table" then continue end
                 for BI,IV in next, Booth do
                     if BI=="Listings" and tostring(Username):find(LocalPlayer.Name) then
                         if type(IV) == "table" then
@@ -413,12 +413,12 @@ local function FindItem(Data, ReturnAmount)
         end
     end
     for _,Inv in pairs(Invs) do
-        if not Inv or not Inv._byUID then --continue end
+        if not Inv or not Inv._byUID then continue end
         for UID,IT in pairs(Inv._byUID) do
             if not ReturnAmount then
                 if table.find(LastUIDs,UID) then
                     local _,ic=FindItemsInBooth(IT.GetId and IT:GetId(), IT.GetClass and IT:GetClass() or (IT.Class and IT.Class.Name) or Data.Class or "Pet")
-                    if ic and ic>=1 then --continue else table.remove(LastUIDs,table.find(LastUIDs,UID)) end
+                    if ic and ic>=1 then continue else table.remove(LastUIDs,table.find(LastUIDs,UID)) end
                     task.wait(0.1)
                 end
             end
@@ -444,7 +444,7 @@ local function FindItem(Data, ReturnAmount)
             if II.Rainbow then II.Display=(II.Display~="" and II.Display.." " or "").."Rainbow" end
             if II.Golden  then II.Display=(II.Display~="" and II.Display.." " or "").."Golden"  end
             II.Display=(II.Display~="" and II.Display.." " or "")..II.ID
-            if II.IsLocked or II.NotTradeable or BlacklistedUIDs[UID] or not UID then --continue end
+            if II.IsLocked or II.NotTradeable or BlacklistedUIDs[UID] or not UID then continue end
             if ReturnAmount then
                 if ValidateItem(II,Data) then Count=II.Amount+Count end
             elseif ValidateItem(II,Data) then
@@ -495,7 +495,7 @@ local function Serverhop()
     while task.wait() do
         local S=IDs[Random.new():NextInteger(1,#IDs)]
         if not Cfg.LastServers then Cfg.LastServers={} end
-        if table.find(Cfg.LastServers,S.JobID) then --continue end
+        if table.find(Cfg.LastServers,S.JobID) then continue end
         if #Cfg.LastServers>=7 then table.remove(Cfg.LastServers,1) end
         table.insert(Cfg.LastServers,S.JobID)
         SaveCfg()
@@ -503,7 +503,7 @@ local function Serverhop()
         local opts=Instance.new("TeleportOptions")
         opts.ServerJobId=S.JobID
         local ok,err=pcall(function() TeleportService:TeleportAsync(S.PlaceID,{LocalPlayer},opts) end)
-        if not ok then warn("[Plaza Plus]: Teleport failed: "..tostring(err)); task.wait(3); --continue end
+        if not ok then warn("[Plaza Plus]: Teleport failed: "..tostring(err)); task.wait(3); continue end
         task.wait(1.5)
     end
 end
@@ -1342,7 +1342,7 @@ local function RunSniper()
 
     local function ProcessBooth(BoothID, Booth)
         for BI,IV in next, Booth do
-            if BI~="Listings" then --continue end
+            if BI~="Listings" then continue end
             for ItemUID,ItemInfo in next, IV do
                 local ID=ItemInfo.Item._data
                 local CI={
@@ -1365,8 +1365,8 @@ local function RunSniper()
 
                 for _,item in pairs(Cfg.SniperItems or {}) do
                     local FI=GetFindInfo(item)
-                    if not FI then --continue end
-                    if not ValidateItem(CI,FI) then --continue end
+                    if not FI then continue end
+                    if not ValidateItem(CI,FI) then continue end
 
                     -- Price check
                     local PD={IsPercentage=type(item.Price)=="string" and item.Price:find("%%"),AboveRAP=type(item.Price)=="string" and item.Price:find("+")}
@@ -1378,13 +1378,13 @@ local function RunSniper()
                     else
                         valid=PD.RealPrice and PD.RealPrice-CI.Cost>=0
                     end
-                    if not valid then --continue end
-                    if GetDiamonds()<CI.Cost then --continue end
+                    if not valid then continue end
+                    if GetDiamonds()<CI.Cost then continue end
 
                     local canBuy=math.floor(GetDiamonds()/CI.Cost)
                     local buyAmt=math.min(CI.Amount,canBuy)
                     if item.InventoryLimit then buyAmt=math.min(buyAmt,item.InventoryLimit-(FindItem(FI,true) or 0)) end
-                    if buyAmt<=0 then --continue end
+                    if buyAmt<=0 then continue end
 
                     warn("[Plaza Plus]: Sniping Ã—"..buyAmt.." "..CI.Display)
 
@@ -1402,7 +1402,7 @@ local function RunSniper()
                     local PlayerID=Booth.PlayerID or Booth.Player and Booth.Player.UserId
                     if not PlayerID then
                         warn("[Plaza Plus]: Could not get PlayerID for booth "..tostring(BoothID))
-                        --continue
+                        continue
                     end
 
                     local Thing={Caller={LineNumber=532,ParameterCount=2,Variadic=false,Traceback="ReplicatedStorage.Library.Client.BoothCmds:532",ScriptPath="ReplicatedStorage.Library.Client.BoothCmds",ScriptClass="ModuleScript",FunctionName="PromptPurchase2",ScriptType="Instance",SourceIdentifier="ReplicatedStorage.Library.Client.BoothCmds"}}
@@ -1477,13 +1477,13 @@ local function RunSniper()
                 local FI=GetFindInfo(item)
                 if not FI or not FI.Class then
                     warn("[Plaza Plus Terminal]: Could not resolve class for: "..tostring(item.Name))
-                    --continue
+                    continue
                 end
 
                 -- Check inventory limit
                 if item.InventoryLimit then
                     local have=FindItem(FI,true) or 0
-                    if have>=item.InventoryLimit then --continue end
+                    if have>=item.InventoryLimit then continue end
                 end
 
                 local searchTable={
@@ -1529,7 +1529,7 @@ local function RunSniper()
                 for _,Users in next, Booths do
                     if type(Users) == "table" then
                         for Username,Booth in next, Users do
-                            if type(Booth) ~= "table" then --continue end
+                            if type(Booth) ~= "table" then continue end
                             if not SniperRunning then break end
                             local skip=false
                             pcall(function() if Booth.Player and Booth.Player:IsInGroup(5060810) then skip=true end end)
@@ -1623,3 +1623,4 @@ if not table.find({PS99.Normal,PS99.Pro,PETSGO.Normal,PETSGO.Pro},game.PlaceId) 
 end
 
 print("[Plaza Plus GUI]: Ready! Press RightShift to toggle.")
+
