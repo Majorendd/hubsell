@@ -643,560 +643,185 @@ task.spawn(function()
     end
 end)
 
--- ══════════════════════════════════════════
---  GUI SYSTEM
--- ══════════════════════════════════════════
-if CoreGui:FindFirstChild("PlazaPlusGUI") then CoreGui:FindFirstChild("PlazaPlusGUI"):Destroy() end
-
-local ScreenGui=Instance.new("ScreenGui")
-ScreenGui.Name="PlazaPlusGUI"
-ScreenGui.ResetOnSpawn=false
-ScreenGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent=CoreGui
-
--- Runtime state
-local IsRunning=false
-local RunMode="Seller" -- "Seller","Sniper","Both"
-
--- Color palette
-local C={
-    BG=Color3.fromRGB(10,10,16),
-    Panel=Color3.fromRGB(18,18,28),
-    Card=Color3.fromRGB(26,26,40),
-    CardHover=Color3.fromRGB(32,32,50),
-    Border=Color3.fromRGB(48,48,72),
-    Accent=Color3.fromRGB(99,102,241),
-    AccentDim=Color3.fromRGB(60,63,160),
-    Green=Color3.fromRGB(52,211,153),
-    GreenDim=Color3.fromRGB(20,90,65),
-    Red=Color3.fromRGB(239,68,68),
-    Yellow=Color3.fromRGB(251,191,36),
-    Text=Color3.fromRGB(235,235,250),
-    Sub=Color3.fromRGB(130,130,165),
-    InputBG=Color3.fromRGB(13,13,22),
-}
-
-local function Tw(obj,props,t,s)
-    TweenService:Create(obj,TweenInfo.new(t or 0.15,s or Enum.EasingStyle.Quad),props):Play()
-end
-local function Corner(p,r) local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,r or 8); c.Parent=p; return c end
-local function Stroke(p,col,th) local s=Instance.new("UIStroke"); s.Color=col or C.Border; s.Thickness=th or 1; s.Parent=p; return s end
-local function Padding(p,a,b,l,r) local pad=Instance.new("UIPadding"); pad.PaddingTop=UDim.new(0,a or 0); pad.PaddingBottom=UDim.new(0,b or 0); pad.PaddingLeft=UDim.new(0,l or 0); pad.PaddingRight=UDim.new(0,r or 0); pad.Parent=p; return pad end
-
-local function Frame(parent,size,pos,color,radius)
-    local f=Instance.new("Frame")
-    f.Size=size; f.Position=pos or UDim2.new(0,0,0,0)
-    f.BackgroundColor3=color or C.Panel; f.BorderSizePixel=0; f.Parent=parent
-    if radius then Corner(f,radius) end
-    return f
-end
-local function Label(parent,text,size,color,font,xalign)
-    local l=Instance.new("TextLabel")
-    l.Text=text; l.TextSize=size or 13; l.TextColor3=color or C.Text
-    l.Font=font or Enum.Font.GothamBold; l.BackgroundTransparency=1
-    l.Size=UDim2.new(1,0,1,0); l.TextXAlignment=xalign or Enum.TextXAlignment.Left
-    l.Parent=parent; return l
-end
-local function Btn(parent,text,size,pos,bg,tc)
-    local b=Instance.new("TextButton")
-    b.Size=size; b.Position=pos or UDim2.new(0,0,0,0)
-    b.BackgroundColor3=bg or C.Accent; b.TextColor3=tc or C.Text
-    b.Text=text; b.TextSize=13; b.Font=Enum.Font.GothamBold
-    b.BorderSizePixel=0; b.AutoButtonColor=false; b.Parent=parent
-    Corner(b,8)
-    b.MouseEnter:Connect(function() Tw(b,{BackgroundColor3=Color3.new(b.BackgroundColor3.R+0.06,b.BackgroundColor3.G+0.06,b.BackgroundColor3.B+0.08)}) end)
-    b.MouseLeave:Connect(function() Tw(b,{BackgroundColor3=bg or C.Accent}) end)
-    return b
-end
-local function Input(parent,placeholder,size,pos)
-    local box=Instance.new("TextBox")
-    box.Size=size; box.Position=pos or UDim2.new(0,0,0,0)
-    box.BackgroundColor3=C.InputBG; box.TextColor3=C.Text
-    box.PlaceholderColor3=C.Sub; box.PlaceholderText=placeholder or ""
-    box.Text=""; box.TextSize=12; box.Font=Enum.Font.Gotham
-    box.BorderSizePixel=0; box.ClearTextOnFocus=false; box.Parent=parent
-    Corner(box,7); Padding(box,0,0,8,8)
-    local sk=Stroke(box,C.Border,1)
-    box.Focused:Connect(function() Tw(sk,{Color=C.Accent}) end)
-    box.FocusLost:Connect(function() Tw(sk,{Color=C.Border}) end)
-    return box
-end
-local function Toggle(parent,pos,default)
-    local h=Frame(parent,UDim2.new(0,42,0,22),pos,Color3.fromRGB(35,35,55),11)
-    local k=Frame(h,UDim2.new(0,16,0,16),UDim2.new(0,3,0.5,-8),default and C.Accent or C.Border,8)
-    local state=default or false
-    local callbacks={}
-    local function Upd()
-        Tw(h,{BackgroundColor3=state and C.AccentDim or Color3.fromRGB(35,35,55)})
-        Tw(k,{Position=state and UDim2.new(1,-19,0.5,-8) or UDim2.new(0,3,0.5,-8),BackgroundColor3=state and C.Accent or C.Sub})
-    end
-    Upd()
-    local tb=Instance.new("TextButton"); tb.Size=UDim2.new(1,0,1,0); tb.BackgroundTransparency=1; tb.Text=""; tb.Parent=h
-    tb.MouseButton1Click:Connect(function() state=not state; Upd(); for _,cb in pairs(callbacks) do cb(state) end end)
-    return h,
-        function() return state end,
-        function(cb) table.insert(callbacks,cb) end,
-        function(v) state=v; Upd() end
-end
-
--- ── Main Window ──────────────────────────
-local Win=Frame(ScreenGui,UDim2.new(0,660,0,540),UDim2.new(0.5,-330,0.5,-270),C.BG,14)
-Win.ClipsDescendants=true
-do
-    local g=Instance.new("UIGradient"); g.Color=ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(10,10,18)),ColorSequenceKeypoint.new(1,Color3.fromRGB(16,10,26))}); g.Rotation=135; g.Parent=Win
-    Stroke(Win,C.Border,1)
-end
-
--- Title bar
-local TBar=Frame(Win,UDim2.new(1,0,0,50),UDim2.new(0,0,0,0),Color3.fromRGB(14,14,24),0)
-do
-    local tl=Instance.new("TextLabel"); tl.Text="PLAZA PLUS"; tl.TextSize=15; tl.Font=Enum.Font.GothamBold; tl.TextColor3=C.Text; tl.BackgroundTransparency=1; tl.Position=UDim2.new(0,18,0,8); tl.Size=UDim2.new(0,160,0,20); tl.TextXAlignment=Enum.TextXAlignment.Left; tl.Parent=TBar
-    local sl=Instance.new("TextLabel"); sl.Text="Auto Seller & Sniper"; sl.TextSize=10; sl.Font=Enum.Font.Gotham; sl.TextColor3=C.Sub; sl.BackgroundTransparency=1; sl.Position=UDim2.new(0,18,0,28); sl.Size=UDim2.new(0,200,0,14); sl.TextXAlignment=Enum.TextXAlignment.Left; sl.Parent=TBar
-    -- status dot
-    local dot=Frame(TBar,UDim2.new(0,8,0,8),UDim2.new(0,200,0,21),C.Sub,4)
-    -- close/min
-    local cBtn=Btn(TBar,"✕",UDim2.new(0,30,0,30),UDim2.new(1,-40,0.5,-15),Color3.fromRGB(60,18,18),C.Red)
-    cBtn.MouseButton1Click:Connect(function() Win.Visible=false end)
-    local mBtn=Btn(TBar,"─",UDim2.new(0,30,0,30),UDim2.new(1,-76,0.5,-15),Color3.fromRGB(30,30,46),C.Sub)
-    local minimized=false
-    mBtn.MouseButton1Click:Connect(function()
-        minimized=not minimized
-        Tw(Win,{Size=minimized and UDim2.new(0,660,0,50) or UDim2.new(0,660,0,540)},0.2)
-    end)
-    -- Running indicator
-    task.spawn(function()
-        while task.wait(1) do
-            if IsRunning then Tw(dot,{BackgroundColor3=C.Green}) else Tw(dot,{BackgroundColor3=C.Sub}) end
         end
-    end)
-end
-
--- Tab row
-local TabRow=Frame(Win,UDim2.new(1,0,0,38),UDim2.new(0,0,0,50),Color3.fromRGB(13,13,22),0)
-local TabLine=Frame(TabRow,UDim2.new(1,0,0,1),UDim2.new(0,0,1,-1),C.Border,0)
-
-local function MakeTabBtn(text,xOff,active)
-    local t=Instance.new("TextButton"); t.Size=UDim2.new(0,110,0,30); t.Position=UDim2.new(0,xOff,0.5,-15)
-    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(22,22,36); t.TextColor3=active and C.Text or C.Sub
-    t.Text=text; t.TextSize=12; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.Parent=TabRow
-    Corner(t,7); return t
-end
-
-local SelTab=MakeTabBtn("🏪  Seller",10,true)
-local SniTab=MakeTabBtn("🔒  Sniper",128,false)
--- Coming Soon overlay on sniper tab click
-SniTab.MouseButton1Click:Connect(function()
-    SwitchTab(SniPanel, SniTab)
-end)
-local CfgTab=MakeTabBtn("⚙  Settings",246,false)
-
--- Content host
-local ContentArea=Frame(Win,UDim2.new(1,-20,1,-140),UDim2.new(0,10,0,96),C.BG,0)
-ContentArea.BackgroundTransparency=1
-
--- ── Panels ───────────────────────────────
-local function Panel()
-    local p=Frame(ContentArea,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.BG,0)
-    p.BackgroundTransparency=1; return p
-end
-
-local SelPanel=Panel()
-local SniPanel=Panel(); SniPanel.Visible=false
-local CfgPanel=Panel(); CfgPanel.Visible=false
-
-local function SwitchTab(panel,activeTab)
-    SelPanel.Visible=panel==SelPanel; SniPanel.Visible=panel==SniPanel; CfgPanel.Visible=panel==CfgPanel
-    for _,t in pairs({SelTab,SniTab,CfgTab}) do Tw(t,{BackgroundColor3=Color3.fromRGB(22,22,36),TextColor3=C.Sub}) end
-    Tw(activeTab,{BackgroundColor3=C.Accent,TextColor3=C.Text})
-end
-SelTab.MouseButton1Click:Connect(function() SwitchTab(SelPanel,SelTab) end)
-SniTab.MouseButton1Click:Connect(function() SwitchTab(SniPanel,SniTab) end)
--- Replace sniper panel with Coming Soon screen
-do
-    local cs=Frame(SniPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,12)
-    -- Lock icon
-    local lockL=Instance.new("TextLabel"); lockL.Text="🔒"; lockL.TextSize=48; lockL.Font=Enum.Font.GothamBold; lockL.TextColor3=C.Sub; lockL.BackgroundTransparency=1; lockL.Position=UDim2.new(0,0,0.2,0); lockL.Size=UDim2.new(1,0,0,60); lockL.TextXAlignment=Enum.TextXAlignment.Center; lockL.Parent=cs
-    local titleL=Instance.new("TextLabel"); titleL.Text="COMING SOON"; titleL.TextSize=22; titleL.Font=Enum.Font.GothamBold; titleL.TextColor3=C.Text; titleL.BackgroundTransparency=1; titleL.Position=UDim2.new(0,0,0.42,0); titleL.Size=UDim2.new(1,0,0,30); titleL.TextXAlignment=Enum.TextXAlignment.Center; titleL.Parent=cs
-    local subL=Instance.new("TextLabel"); subL.Text="Sniper is currently under development\nand will be available in a future update."; subL.TextSize=13; subL.Font=Enum.Font.Gotham; subL.TextColor3=C.Sub; subL.BackgroundTransparency=1; subL.Position=UDim2.new(0,20,0.55,0); subL.Size=UDim2.new(1,-40,0,50); subL.TextXAlignment=Enum.TextXAlignment.Center; subL.TextWrapped=true; subL.Parent=cs
-    -- Animated dots
-    task.spawn(function()
-        local dots={"", ".", "..", "..."}
-        local i=1
-        while cs.Parent do
-            titleL.Text="COMING SOON"..dots[i]
-            i=i%#dots+1
-            task.wait(0.5)
-        end
-    end)
-end
-CfgTab.MouseButton1Click:Connect(function() SwitchTab(CfgPanel,CfgTab) end)
-
--- ══════════════════════════════════════════
---  SHARED: Item card builder
--- ══════════════════════════════════════════
-local function ItemCard(parent,name,price,extra,onRemove)
-    local card=Frame(parent,UDim2.new(1,0,0,46),UDim2.new(0,0,0,0),C.Card,8)
-    Stroke(card,C.Border,1)
-    local nl=Instance.new("TextLabel"); nl.Text=name; nl.TextSize=12; nl.Font=Enum.Font.GothamBold; nl.TextColor3=C.Text; nl.BackgroundTransparency=1; nl.Position=UDim2.new(0,10,0,6); nl.Size=UDim2.new(1,-50,0,18); nl.TextXAlignment=Enum.TextXAlignment.Left; nl.Parent=card; nl.TextTruncate=Enum.TextTruncate.AtEnd
-    local dl=Instance.new("TextLabel"); dl.Text="💎 "..tostring(price)..(extra~="" and "  ·  "..extra or ""); dl.TextSize=11; dl.Font=Enum.Font.Gotham; dl.TextColor3=C.Sub; dl.BackgroundTransparency=1; dl.Position=UDim2.new(0,10,0,26); dl.Size=UDim2.new(1,-50,0,14); dl.TextXAlignment=Enum.TextXAlignment.Left; dl.Parent=card
-    -- Live badge shown when script is running
-    local liveBadge=Instance.new("TextLabel"); liveBadge.Text="● LIVE"; liveBadge.TextSize=9; liveBadge.Font=Enum.Font.GothamBold; liveBadge.TextColor3=C.Green; liveBadge.BackgroundTransparency=1; liveBadge.Position=UDim2.new(1,-70,0,6); liveBadge.Size=UDim2.new(0,36,0,12); liveBadge.TextXAlignment=Enum.TextXAlignment.Right; liveBadge.Parent=card; liveBadge.Visible=false
-    task.spawn(function()
-        while card.Parent do
-            liveBadge.Visible=IsRunning
-            task.wait(1)
-        end
-    end)
-    local rb=Instance.new("TextButton"); rb.Size=UDim2.new(0,26,0,26); rb.Position=UDim2.new(1,-34,0.5,-13); rb.BackgroundColor3=Color3.fromRGB(50,15,15); rb.TextColor3=C.Red; rb.Text="✕"; rb.TextSize=12; rb.Font=Enum.Font.GothamBold; rb.BorderSizePixel=0; rb.AutoButtonColor=false; rb.Parent=card; Corner(rb,6)
-    rb.MouseButton1Click:Connect(function()
-        card:Destroy()
-        -- Also wipe from blacklist so re-adding works cleanly
-        for uid,_ in pairs(BlacklistedUIDs) do BlacklistedUIDs[uid]=nil end
-        onRemove()
-    end)
-    return card
-end
-
--- ══════════════════════════════════════════
---  SELLER PANEL
--- ══════════════════════════════════════════
-local SLeft=Frame(SelPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
-local SRight=Frame(SelPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
-
--- Item list (left)
-do
-    local h=Frame(SLeft,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,8),C.Panel,0); h.BackgroundTransparency=1
-    Label(h,"Items to Sell",12,C.Sub,Enum.Font.GothamBold)
-    local scroll=Instance.new("ScrollingFrame"); scroll.Size=UDim2.new(1,-16,1,-46); scroll.Position=UDim2.new(0,8,0,40); scroll.BackgroundTransparency=1; scroll.BorderSizePixel=0; scroll.ScrollBarThickness=3; scroll.ScrollBarImageColor3=C.Accent; scroll.CanvasSize=UDim2.new(0,0,0,0); scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; scroll.Parent=SLeft
-    local layout=Instance.new("UIListLayout"); layout.Padding=UDim.new(0,4); layout.Parent=scroll
-
-    local SellerItemData={}
-    -- Restore saved
-    for _,item in pairs(Cfg.SellerItems or {}) do
-        SellerItemData[item.Name]=item
-        local ext=(item.Amount and "×"..item.Amount or "×max")..(item.Class and " · "..item.Class or "")..(item.Priority and " ⚡" or "")
-        ItemCard(scroll,item.Name,item.Price,ext,function()
-            SellerItemData[item.Name]=nil
-            local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
+        local priceVal = tonumber(price) or price
+        local limit = sLimitIn.Text ~= "" and tonumber(sLimitIn.Text) or nil
+        local allTypes = getAllTypes()
+        local detect = getDetect()
+        local item = { Name = name, Price = priceVal, InventoryLimit = limit, AllTypes = allTypes, DetectManipulation = detect }
+        SniperItemData[name] = item
+        local ext = (limit and "limit:" .. limit or "") .. (allTypes and " all-types" or "") .. (detect and " anti-manip" or "")
+        ItemCard(bScroll, name, priceVal, ext, function()
+            SniperItemData[name] = nil
+            local t = {}
+            for _, v in pairs(SniperItemData) do table.insert(t, v) end
+            Cfg.SniperItems = t
+            SaveCfg()
         end)
+        sNameIn.Text = ""
+        sPriceIn.Text = ""
+        sLimitIn.Text = ""
+        setAllTypes(false)
+        setDetect(false)
+        sStatusL.TextColor3 = IsRunning and C.Yellow or C.Green
+        sStatusL.Text = IsRunning and "Added live" or "Added"
+        task.delay(2, function() sStatusL.Text = "" end)
+        local t = {}
+        for _, v in pairs(SniperItemData) do table.insert(t, v) end
+        Cfg.SniperItems = t
+        SaveCfg()
+    end)
+
+    local function TLabel(p, txt, y)
+        local f = Frame(p, UDim2.new(1, -16, 0, 13), UDim2.new(0, 8, 0, y), C.Panel, 0)
+        f.BackgroundTransparency = 1
+        Label(f, txt, 10, C.Sub, Enum.Font.Gotham)
+        return f
     end
 
-    -- Add form (right)
-    local function FLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,14),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
-    FLabel(SRight,"Item Name",8)
-    local nameIn=Input(SRight,"e.g. Spring Bluebell Token",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,24))
-    FLabel(SRight,"Price  (2 · 1m · +20% · -5%)",58)
-    local priceIn=Input(SRight,"e.g. 2  or  1m  or  +20%",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,74))
-    FLabel(SRight,"Amount  (blank = sell all)",108)
-    local amtIn=Input(SRight,"blank = max available",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,124))
-    FLabel(SRight,"Class  (Misc, Pet … blank=auto)",158)
-    local classIn=Input(SRight,"e.g. Misc",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,174))
-    FLabel(SRight,"Tier  (for potions/tiered items)",208)
-    local tierIn=Input(SRight,"e.g. 2  (blank = any tier)",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,224))
+    local infoBox = Frame(termForm, UDim2.new(1, -16, 0, 36), UDim2.new(0, 8, 0, 4), Color3.fromRGB(17, 28, 24), 8)
+    Stroke(infoBox, C.Green, 1)
+    local infoL = Label(infoBox, "Terminal searches all servers for cheapest listings", 10, C.Green, Enum.Font.Gotham)
+    infoL.Position = UDim2.new(0, 8, 0, 0)
+    infoL.Size = UDim2.new(1, -16, 1, 0)
 
-    -- Type row: Rainbow / Golden / Shiny toggles
-    FLabel(SRight,"Pet Type",258)
-    local typeRow=Frame(SRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,274),C.Panel,0); typeRow.BackgroundTransparency=1
-    -- Rainbow
-    local rainbowDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(99,200,255),5)
-    local rainbowLbl=Instance.new("TextLabel"); rainbowLbl.Text="Rainbow"; rainbowLbl.TextSize=11; rainbowLbl.Font=Enum.Font.Gotham; rainbowLbl.TextColor3=C.Sub; rainbowLbl.BackgroundTransparency=1; rainbowLbl.Position=UDim2.new(0,14,0,0); rainbowLbl.Size=UDim2.new(0,60,1,0); rainbowLbl.TextXAlignment=Enum.TextXAlignment.Left; rainbowLbl.Parent=typeRow
-    local _,getRainbow,_,setRainbow=Toggle(typeRow,UDim2.new(0,74,0.5,-11),false)
-    -- Golden
-    local goldenDot=Frame(typeRow,UDim2.new(0,10,0,10),UDim2.new(0.48,0,0.5,-5),Color3.fromRGB(255,200,50),5)
-    local goldenLbl=Instance.new("TextLabel"); goldenLbl.Text="Golden"; goldenLbl.TextSize=11; goldenLbl.Font=Enum.Font.Gotham; goldenLbl.TextColor3=C.Sub; goldenLbl.BackgroundTransparency=1; goldenLbl.Position=UDim2.new(0.48,14,0,0); goldenLbl.Size=UDim2.new(0,55,1,0); goldenLbl.TextXAlignment=Enum.TextXAlignment.Left; goldenLbl.Parent=typeRow
-    local _,getGolden,_,setGolden=Toggle(typeRow,UDim2.new(0.48,68,0.5,-11),false)
-
-    -- Shiny row
-    local shinyRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,308),C.Panel,0); shinyRow.BackgroundTransparency=1
-    local shinyDot=Frame(shinyRow,UDim2.new(0,10,0,10),UDim2.new(0,0,0.5,-5),Color3.fromRGB(255,130,230),5)
-    local shinyLbl=Instance.new("TextLabel"); shinyLbl.Text="Shiny"; shinyLbl.TextSize=11; shinyLbl.Font=Enum.Font.Gotham; shinyLbl.TextColor3=C.Sub; shinyLbl.BackgroundTransparency=1; shinyLbl.Position=UDim2.new(0,14,0,0); shinyLbl.Size=UDim2.new(0,45,1,0); shinyLbl.TextXAlignment=Enum.TextXAlignment.Left; shinyLbl.Parent=shinyRow
-    local _,getShiny,_,setShiny=Toggle(shinyRow,UDim2.new(0,58,0.5,-11),false)
-    local allTypesLbl=Instance.new("TextLabel"); allTypesLbl.Text="All Types"; allTypesLbl.TextSize=11; allTypesLbl.Font=Enum.Font.Gotham; allTypesLbl.TextColor3=C.Sub; allTypesLbl.BackgroundTransparency=1; allTypesLbl.Position=UDim2.new(0.48,0,0,0); allTypesLbl.Size=UDim2.new(0,60,1,0); allTypesLbl.TextXAlignment=Enum.TextXAlignment.Left; allTypesLbl.Parent=shinyRow
-    local _,getAllTypes,_,setAllTypes=Toggle(shinyRow,UDim2.new(0.48,64,0.5,-11),false)
-
-    -- Priority toggle
-    local prioRow=Frame(SRight,UDim2.new(1,-16,0,26),UDim2.new(0,8,0,340),C.Panel,0); prioRow.BackgroundTransparency=1
-    Label(prioRow,"Priority (list first)",12,C.Text,Enum.Font.Gotham)
-    local _,getPrio,_,setPrio=Toggle(prioRow,UDim2.new(1,-46,0.5,-11),false)
-
-    -- Quick-add: All Huges button
-    local quickBtn=Btn(SRight,"⚡ Quick: All Huges +20%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,372),Color3.fromRGB(40,30,10),C.Yellow)
-    quickBtn.TextSize=11
-
-    local addBtn=Btn(SRight,"＋ Add Item",UDim2.new(1,-16,0,32),UDim2.new(0,8,0,404),C.Accent)
-    local statusL=Instance.new("TextLabel"); statusL.Size=UDim2.new(1,-16,0,18); statusL.Position=UDim2.new(0,8,0,442); statusL.BackgroundTransparency=1; statusL.TextColor3=C.Green; statusL.Font=Enum.Font.Gotham; statusL.TextSize=11; statusL.Text=""; statusL.TextXAlignment=Enum.TextXAlignment.Center; statusL.Parent=SRight
-
-    local function DoAddItem(name, price, amt, cls, tier, prio, rainbow, golden, shiny, allTypes)
-        if name=="" or price=="" then statusL.TextColor3=C.Red; statusL.Text="⚠ Name and price required"; task.delay(2,function() statusL.Text="" end); return end
-        local typePrefix = (shiny and "Shiny " or "")..(rainbow and "Rainbow " or "")..(golden and "Golden " or "")
-        local displayKey = typePrefix..name..(tier and " T"..tier or "")
-        if SellerItemData[displayKey] then statusL.TextColor3=C.Red; statusL.Text="⚠ Already in list"; task.delay(2,function() statusL.Text="" end); return end
-        local priceVal=tonumber(price) or price
-        local item={Name=name, Price=priceVal, Amount=amt, Class=cls, Tier=tier, Priority=prio,
-                    Rainbow=rainbow, Golden=golden, Shiny=shiny, AllTypes=allTypes,
-                    _displayKey=displayKey}
-        SellerItemData[displayKey]=item
-        local typeStr=(allTypes and "all-types" or typePrefix~="" and typePrefix:gsub(" $","") or "normal")
-        local ext=(amt and "×"..amt or "×max")..(cls and " · "..cls or "")..(tier and " T"..tier or "").." · "..typeStr..(prio and " ⚡" or "")
-        ItemCard(scroll,displayKey,priceVal,ext,function()
-            SellerItemData[displayKey]=nil
-            local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
-        end)
-        if IsRunning then
-            statusL.TextColor3=C.Yellow; statusL.Text="⚡ Added live — listing next cycle"
-        else
-            statusL.TextColor3=C.Green; statusL.Text="✓ Added: "..displayKey
-        end
-        task.delay(2,function() statusL.Text="" end)
-        local t={}; for _,v in pairs(SellerItemData) do table.insert(t,v) end; Cfg.SellerItems=t; SaveCfg()
-    end
-
-    addBtn.MouseButton1Click:Connect(function()
-        local name=nameIn.Text:match("^%s*(.-)%s*$")
-        local price=priceIn.Text:match("^%s*(.-)%s*$")
-        local amt=amtIn.Text~="" and tonumber(amtIn.Text) or nil
-        local cls=classIn.Text~="" and classIn.Text or nil
-        local tier=tierIn.Text~="" and tonumber(tierIn.Text) or nil
-        DoAddItem(name,price,amt,cls,tier,getPrio(),getRainbow(),getGolden(),getShiny(),getAllTypes())
-        nameIn.Text=""; priceIn.Text=""; amtIn.Text=""; classIn.Text=""; tierIn.Text=""
-        setRainbow(false); setGolden(false); setShiny(false); setAllTypes(false); setPrio(false)
-    end)
-
-    -- Quick-add All Huges
-    quickBtn.MouseButton1Click:Connect(function()
-        DoAddItem("All Huges","+20%",nil,nil,nil,false,false,false,false,true)
-        statusL.TextColor3=C.Yellow; statusL.Text="⚡ All Huges added at +20% RAP"
-        task.delay(2,function() statusL.Text="" end)
-    end)
-end
-
--- ══════════════════════════════════════════
---  SNIPER PANEL  (two sub-tabs)
--- ══════════════════════════════════════════
-local SNLeft=Frame(SniPanel,UDim2.new(0.52,-5,1,0),UDim2.new(0,0,0,0),C.Panel,10)
-local SNRight=Frame(SniPanel,UDim2.new(0.48,-5,1,0),UDim2.new(0.52,5,0,0),C.Panel,10)
-
--- Sub-tab bar inside SNRight
-local subTabBar=Frame(SNRight,UDim2.new(1,-16,0,28),UDim2.new(0,8,0,6),Color3.fromRGB(20,20,32),6)
-local function SubTab(txt,xOff,active)
-    local t=Instance.new("TextButton"); t.Size=UDim2.new(0.5,-2,1,-4); t.Position=UDim2.new(xOff,2,0,2)
-    t.BackgroundColor3=active and C.Accent or Color3.fromRGB(28,28,44); t.TextColor3=active and C.Text or C.Sub
-    t.Text=txt; t.TextSize=11; t.Font=Enum.Font.GothamBold; t.BorderSizePixel=0; t.AutoButtonColor=false; t.Parent=subTabBar
-    Corner(t,5); return t
-end
-local boothSubTab=SubTab("🔍 Booth",0,true)
-local termSubTab=SubTab("📡 Terminal",0.5,false)
-
--- Booth sniper form
-local boothForm=Frame(SNRight,UDim2.new(1,0,1,-40),UDim2.new(0,0,0,40),C.Panel,0); boothForm.BackgroundTransparency=1
-
--- Terminal form
-local termForm=Frame(SNRight,UDim2.new(1,0,1,-40),UDim2.new(0,0,0,40),C.Panel,0); termForm.BackgroundTransparency=1; termForm.Visible=false
-
-boothSubTab.MouseButton1Click:Connect(function()
-    boothForm.Visible=true; termForm.Visible=false
-    Tw(boothSubTab,{BackgroundColor3=C.Accent,TextColor3=C.Text})
-    Tw(termSubTab,{BackgroundColor3=Color3.fromRGB(28,28,44),TextColor3=C.Sub})
-end)
-termSubTab.MouseButton1Click:Connect(function()
-    boothForm.Visible=false; termForm.Visible=true
-    Tw(termSubTab,{BackgroundColor3=C.Accent,TextColor3=C.Text})
-    Tw(boothSubTab,{BackgroundColor3=Color3.fromRGB(28,28,44),TextColor3=C.Sub})
-end)
-
--- Left: shared item list with two sections
-do
-    -- Booth items header
-    local bh=Frame(SNLeft,UDim2.new(1,-16,0,16),UDim2.new(0,8,0,6),C.Panel,0); bh.BackgroundTransparency=1
-    Label(bh,"🔍 Booth Targets",11,C.Sub,Enum.Font.GothamBold)
-    local bScroll=Instance.new("ScrollingFrame"); bScroll.Size=UDim2.new(1,-16,0.48,-28); bScroll.Position=UDim2.new(0,8,0,24); bScroll.BackgroundTransparency=1; bScroll.BorderSizePixel=0; bScroll.ScrollBarThickness=3; bScroll.ScrollBarImageColor3=C.Accent; bScroll.CanvasSize=UDim2.new(0,0,0,0); bScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; bScroll.Parent=SNLeft
-    local bLayout=Instance.new("UIListLayout"); bLayout.Padding=UDim.new(0,3); bLayout.Parent=bScroll
-
-    -- Terminal items header
-    local th=Frame(SNLeft,UDim2.new(1,-16,0,16),UDim2.new(0,8,0.5,4),C.Panel,0); th.BackgroundTransparency=1
-    Label(th,"📡 Terminal Targets",11,C.Sub,Enum.Font.GothamBold)
-    local tScroll=Instance.new("ScrollingFrame"); tScroll.Size=UDim2.new(1,-16,0.48,-28); tScroll.Position=UDim2.new(0,8,0.5,22); tScroll.BackgroundTransparency=1; tScroll.BorderSizePixel=0; tScroll.ScrollBarThickness=3; tScroll.ScrollBarImageColor3=C.Yellow; tScroll.CanvasSize=UDim2.new(0,0,0,0); tScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; tScroll.Parent=SNLeft
-    local tLayout=Instance.new("UIListLayout"); tLayout.Padding=UDim.new(0,3); tLayout.Parent=tScroll
-
-    -- Divider
-    local div=Frame(SNLeft,UDim2.new(1,-16,0,1),UDim2.new(0,8,0.5,1),C.Border,0)
-
-    local SniperItemData={}
-    local TerminalItemData={}
-
-    -- Restore saved booth items
-    for _,item in pairs(Cfg.SniperItems or {}) do
-        SniperItemData[item.Name]=item
-        local ext=(item.InventoryLimit and "limit:"..item.InventoryLimit or "")..(item.AllTypes and " all-types" or "")..(item.DetectManipulation and " anti-manip" or "")
-        ItemCard(bScroll,item.Name,item.Price,ext,function()
-            SniperItemData[item.Name]=nil
-            local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
-        end)
-    end
-
-    -- Restore saved terminal items
-    for _,item in pairs(Cfg.TerminalItems or {}) do
-        TerminalItemData[item.Name]=item
-        local ext=(item.InventoryLimit and "limit:"..item.InventoryLimit or "")..(item.UseCosmicValues and " cosmic" or "")
-        ItemCard(tScroll,item.Name,item.Price,ext,function()
-            TerminalItemData[item.Name]=nil
-            local t={}; for _,v in pairs(TerminalItemData) do table.insert(t,v) end; Cfg.TerminalItems=t; SaveCfg()
-        end)
-    end
-
-    -- ── BOOTH FORM ──────────────────────────
-    local function FLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,13),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
-
-    FLabel(boothForm,"Item Name  (All Huges, Huge Cat…)",4)
-    local sNameIn=Input(boothForm,"e.g. All Huges",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,19))
-    FLabel(boothForm,"Max Price  (flat or %)",51)
-    local sPriceIn=Input(boothForm,"e.g. 15m  or  50%  or  +2%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,66))
-    FLabel(boothForm,"Inventory Limit  (blank = none)",98)
-    local sLimitIn=Input(boothForm,"e.g. 100",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,113))
-
-    local atRow=Frame(boothForm,UDim2.new(1,-16,0,24),UDim2.new(0,8,0,145),C.Panel,0); atRow.BackgroundTransparency=1
-    Label(atRow,"All Types",11,C.Text,Enum.Font.Gotham)
-    local _,getAllTypes,_,setAllTypes=Toggle(atRow,UDim2.new(0.5,0,0.5,-11),false)
-    local dmLabel=Instance.new("TextLabel"); dmLabel.Text="Anti-Manip"; dmLabel.TextSize=11; dmLabel.Font=Enum.Font.Gotham; dmLabel.TextColor3=C.Text; dmLabel.BackgroundTransparency=1; dmLabel.Position=UDim2.new(0.5,50,0,0); dmLabel.Size=UDim2.new(0.4,0,1,0); dmLabel.TextXAlignment=Enum.TextXAlignment.Left; dmLabel.Parent=atRow
-    local _,getDetect,_,setDetect=Toggle(atRow,UDim2.new(1,-46,0.5,-11),false)
-
-    local sAddBtn=Btn(boothForm,"＋ Add Booth Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,175),C.Accent)
-    sAddBtn.TextSize=11
-    local sStatusL=Instance.new("TextLabel"); sStatusL.Size=UDim2.new(1,-16,0,16); sStatusL.Position=UDim2.new(0,8,0,209); sStatusL.BackgroundTransparency=1; sStatusL.TextColor3=C.Green; sStatusL.Font=Enum.Font.Gotham; sStatusL.TextSize=10; sStatusL.Text=""; sStatusL.TextXAlignment=Enum.TextXAlignment.Center; sStatusL.Parent=boothForm
-
-    sAddBtn.MouseButton1Click:Connect(function()
-        local name=sNameIn.Text:match("^%s*(.-)%s*$")
-        local price=sPriceIn.Text:match("^%s*(.-)%s*$")
-        if name=="" or price=="" then sStatusL.TextColor3=C.Red; sStatusL.Text="⚠ Name and price required"; task.delay(2,function() sStatusL.Text="" end); return end
-        if SniperItemData[name] then sStatusL.TextColor3=C.Red; sStatusL.Text="⚠ Already in list"; task.delay(2,function() sStatusL.Text="" end); return end
-        local priceVal=tonumber(price) or price
-        local limit=sLimitIn.Text~="" and tonumber(sLimitIn.Text) or nil
-        local allTypes=getAllTypes(); local detect=getDetect()
-        local item={Name=name,Price=priceVal,InventoryLimit=limit,AllTypes=allTypes,DetectManipulation=detect}
-        SniperItemData[name]=item
-        local ext=(limit and "limit:"..limit or "")..(allTypes and " all-types" or "")..(detect and " anti-manip" or "")
-        ItemCard(bScroll,name,priceVal,ext,function()
-            SniperItemData[name]=nil
-            local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
-        end)
-        sNameIn.Text=""; sPriceIn.Text=""; sLimitIn.Text=""; setAllTypes(false); setDetect(false)
-        sStatusL.TextColor3=IsRunning and C.Yellow or C.Green
-        sStatusL.Text=IsRunning and "⚡ Added live" or "✓ Added"
-        task.delay(2,function() sStatusL.Text="" end)
-        local t={}; for _,v in pairs(SniperItemData) do table.insert(t,v) end; Cfg.SniperItems=t; SaveCfg()
-    end)
-
-    -- ── TERMINAL FORM ───────────────────────
-    local function TLabel(p,txt,y) local f=Frame(p,UDim2.new(1,-16,0,13),UDim2.new(0,8,0,y),C.Panel,0); f.BackgroundTransparency=1; Label(f,txt,10,C.Sub,Enum.Font.Gotham); return f end
-
-    -- Info box
-    local infoBox=Frame(termForm,UDim2.new(1,-16,0,36),UDim2.new(0,8,0,4),Color3.fromRGB(20,30,20),8)
-    Stroke(infoBox,C.Green,1)
-    local infoL=Instance.new("TextLabel"); infoL.Text="📡 Terminal searches ALL servers\nfor the cheapest listings globally"; infoL.TextSize=10; infoL.Font=Enum.Font.Gotham; infoL.TextColor3=C.Green; infoL.BackgroundTransparency=1; infoL.Position=UDim2.new(0,8,0,0); infoL.Size=UDim2.new(1,-16,1,0); infoL.TextXAlignment=Enum.TextXAlignment.Left; infoL.TextWrapped=true; infoL.Parent=infoBox
-
-    TLabel(termForm,"Item Name  (exact name required)",46)
-    local tNameIn=Input(termForm,"e.g. Huge Night Terror Cat",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,61))
-    TLabel(termForm,"Max Price  (flat or %)",93)
-    local tPriceIn=Input(termForm,"e.g. 15m  or  50%",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,108))
-    TLabel(termForm,"Class  (Pet, Lootbox, Box, Misc…)",140)
-    local tClassIn=Input(termForm,"e.g. Pet  or  Lootbox  (blank=auto)",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,155))
-    TLabel(termForm,"Inventory Limit  (blank = none)",187)
-    local tLimitIn=Input(termForm,"e.g. 50",UDim2.new(1,-16,0,26),UDim2.new(0,8,0,202))
-
-    local cvRow=Frame(termForm,UDim2.new(1,-16,0,24),UDim2.new(0,8,0,187),C.Panel,0); cvRow.BackgroundTransparency=1
-    Label(cvRow,"Use Cosmic Values",11,C.Text,Enum.Font.Gotham)
-    local _,getCosmicVal,_,setCosmicVal=Toggle(cvRow,UDim2.new(1,-46,0.5,-11),false)
-
-    local tAddBtn=Btn(termForm,"＋ Add Terminal Target",UDim2.new(1,-16,0,28),UDim2.new(0,8,0,218),C.Yellow,Color3.fromRGB(30,20,5))
-    tAddBtn.TextSize=11; tAddBtn.TextColor3=Color3.fromRGB(40,28,5)
-    local tStatusL=Instance.new("TextLabel"); tStatusL.Size=UDim2.new(1,-16,0,16); tStatusL.Position=UDim2.new(0,8,0,252); tStatusL.BackgroundTransparency=1; tStatusL.TextColor3=C.Green; tStatusL.Font=Enum.Font.Gotham; tStatusL.TextSize=10; tStatusL.Text=""; tStatusL.TextXAlignment=Enum.TextXAlignment.Center; tStatusL.Parent=termForm
+    TLabel(termForm, "Item Name", 46)
+    local tNameIn = Input(termForm, "e.g. Huge Night Terror Cat", UDim2.new(1, -16, 0, 26), UDim2.new(0, 8, 0, 61))
+    TLabel(termForm, "Max Price", 93)
+    local tPriceIn = Input(termForm, "e.g. 15m or 50%", UDim2.new(1, -16, 0, 26), UDim2.new(0, 8, 0, 108))
+    TLabel(termForm, "Class", 140)
+    local tClassIn = Input(termForm, "e.g. Pet or Lootbox", UDim2.new(1, -16, 0, 26), UDim2.new(0, 8, 0, 155))
+    TLabel(termForm, "Inventory Limit", 187)
+    local tLimitIn = Input(termForm, "e.g. 50", UDim2.new(1, -16, 0, 26), UDim2.new(0, 8, 0, 202))
+    local cvRow = Frame(termForm, UDim2.new(1, -16, 0, 24), UDim2.new(0, 8, 0, 187), C.Panel, 0)
+    cvRow.BackgroundTransparency = 1
+    Label(cvRow, "Use Cosmic Values", 11, C.Text, Enum.Font.Gotham)
+    local _, getCosmicVal, _, setCosmicVal = Toggle(cvRow, UDim2.new(1, -46, 0.5, -11), false)
+    local tAddBtn = Btn(termForm, "+ Add Terminal Target", UDim2.new(1, -16, 0, 28), UDim2.new(0, 8, 0, 218), C.Yellow, Color3.fromRGB(30, 20, 5))
+    tAddBtn.TextSize = 11
+    tAddBtn.TextColor3 = Color3.fromRGB(40, 28, 5)
+    local tStatusL = Label(termForm, "", 10, C.Green, Enum.Font.Gotham, Enum.TextXAlignment.Center)
+    tStatusL.Size = UDim2.new(1, -16, 0, 16)
+    tStatusL.Position = UDim2.new(0, 8, 0, 252)
 
     tAddBtn.MouseButton1Click:Connect(function()
-        local name=tNameIn.Text:match("^%s*(.-)%s*$")
-        local price=tPriceIn.Text:match("^%s*(.-)%s*$")
-        if name=="" or price=="" then tStatusL.TextColor3=C.Red; tStatusL.Text="⚠ Name and price required"; task.delay(2,function() tStatusL.Text="" end); return end
-        if TerminalItemData[name] then tStatusL.TextColor3=C.Red; tStatusL.Text="⚠ Already in list"; task.delay(2,function() tStatusL.Text="" end); return end
-        local priceVal=tonumber(price) or price
-        local limit=tLimitIn.Text~="" and tonumber(tLimitIn.Text) or nil
-        local cls=tClassIn.Text~="" and tClassIn.Text or nil
-        local cosmic=getCosmicVal()
-        local item={Name=name, Price=priceVal, InventoryLimit=limit, Class=cls, UseCosmicValues=cosmic}
-        TerminalItemData[name]=item
-        local ext=(cls and cls.." · " or "")..(limit and "limit:"..limit or "")..(cosmic and " cosmic" or "")
-        ItemCard(tScroll,name,priceVal,ext,function()
-            TerminalItemData[name]=nil
-            local t={}; for _,v in pairs(TerminalItemData) do table.insert(t,v) end; Cfg.TerminalItems=t; SaveCfg()
+        local name = tNameIn.Text:match("^%s*(.-)%s*$")
+        local price = tPriceIn.Text:match("^%s*(.-)%s*$")
+        if name == "" or price == "" then
+            tStatusL.TextColor3 = C.Red
+            tStatusL.Text = "Name and price required"
+            task.delay(2, function() tStatusL.Text = "" end)
+            return
+        end
+        if TerminalItemData[name] then
+            tStatusL.TextColor3 = C.Red
+            tStatusL.Text = "Already in list"
+            task.delay(2, function() tStatusL.Text = "" end)
+            return
+        end
+        local priceVal = tonumber(price) or price
+        local limit = tLimitIn.Text ~= "" and tonumber(tLimitIn.Text) or nil
+        local cls = tClassIn.Text ~= "" and tClassIn.Text or nil
+        local cosmic = getCosmicVal()
+        local item = { Name = name, Price = priceVal, InventoryLimit = limit, Class = cls, UseCosmicValues = cosmic }
+        TerminalItemData[name] = item
+        local ext = (cls and cls .. " - " or "") .. (limit and "limit:" .. limit or "") .. (cosmic and " cosmic" or "")
+        ItemCard(tScroll, name, priceVal, ext, function()
+            TerminalItemData[name] = nil
+            local t = {}
+            for _, v in pairs(TerminalItemData) do table.insert(t, v) end
+            Cfg.TerminalItems = t
+            SaveCfg()
         end)
-        tNameIn.Text=""; tPriceIn.Text=""; tLimitIn.Text=""; tClassIn.Text=""; setCosmicVal(false)
-        tStatusL.TextColor3=IsRunning and C.Yellow or C.Green
-        tStatusL.Text=IsRunning and "⚡ Added live — searching now" or "✓ Added"
-        task.delay(2,function() tStatusL.Text="" end)
-        local t={}; for _,v in pairs(TerminalItemData) do table.insert(t,v) end; Cfg.TerminalItems=t; SaveCfg()
+        tNameIn.Text = ""
+        tPriceIn.Text = ""
+        tLimitIn.Text = ""
+        tClassIn.Text = ""
+        setCosmicVal(false)
+        tStatusL.TextColor3 = IsRunning and C.Yellow or C.Green
+        tStatusL.Text = IsRunning and "Added live - searching now" or "Added"
+        task.delay(2, function() tStatusL.Text = "" end)
+        local t = {}
+        for _, v in pairs(TerminalItemData) do table.insert(t, v) end
+        Cfg.TerminalItems = t
+        SaveCfg()
     end)
 end
 
--- ══════════════════════════════════════════
---  SETTINGS PANEL
--- ══════════════════════════════════════════
+-- Settings panel
 do
-    local sf=Frame(CfgPanel,UDim2.new(1,0,1,0),UDim2.new(0,0,0,0),C.Panel,10)
-    local function Row(label,y)
-        local r=Frame(sf,UDim2.new(1,-16,0,38),UDim2.new(0,8,0,y),C.Card,8); Stroke(r,C.Border,1)
-        local l=Instance.new("TextLabel"); l.Text=label; l.TextSize=12; l.Font=Enum.Font.GothamBold; l.TextColor3=C.Text; l.BackgroundTransparency=1; l.Position=UDim2.new(0,12,0,0); l.Size=UDim2.new(0.55,0,1,0); l.TextXAlignment=Enum.TextXAlignment.Left; l.Parent=r
+    local sf = Frame(CfgPanel, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), C.Panel, 10)
+    local function Row(label, y)
+        local r = Frame(sf, UDim2.new(1, -16, 0, 38), UDim2.new(0, 8, 0, y), C.Card, 8)
+        Stroke(r, C.Border, 1)
+        local l = Label(r, label, 12, C.Text, Enum.Font.GothamBold)
+        l.Position = UDim2.new(0, 12, 0, 0)
+        l.Size = UDim2.new(0.55, 0, 1, 0)
         return r
     end
 
-    -- Section label
-    local sl=Instance.new("TextLabel"); sl.Text="GENERAL"; sl.TextSize=10; sl.Font=Enum.Font.GothamBold; sl.TextColor3=C.Sub; sl.BackgroundTransparency=1; sl.Position=UDim2.new(0,8,0,8); sl.Size=UDim2.new(1,0,0,16); sl.TextXAlignment=Enum.TextXAlignment.Left; sl.Parent=sf
+    local sl = Label(sf, "GENERAL", 10, C.Sub, Enum.Font.GothamBold)
+    sl.Position = UDim2.new(0, 8, 0, 8)
+    sl.Size = UDim2.new(1, 0, 0, 16)
 
-    -- Mode
-    local modeRow=Row("Mode  (what to run)",28)
-    local modeOptions={"Seller","Sniper","Both"}
-    local modeIdx=1
-    for i,v in ipairs(modeOptions) do if v==Cfg.Mode then modeIdx=i end end
-    local modeLabel=Instance.new("TextLabel"); modeLabel.Size=UDim2.new(0,90,0,26); modeLabel.Position=UDim2.new(1,-100,0.5,-13); modeLabel.BackgroundColor3=C.Accent; modeLabel.TextColor3=C.Text; modeLabel.Text=modeOptions[modeIdx]; modeLabel.TextSize=12; modeLabel.Font=Enum.Font.GothamBold; modeLabel.BorderSizePixel=0; modeLabel.Parent=modeRow; Corner(modeLabel,6)
-    local mBtn2=Instance.new("TextButton"); mBtn2.Size=UDim2.new(1,0,1,0); mBtn2.BackgroundTransparency=1; mBtn2.Text=""; mBtn2.Parent=modeLabel
+    local modeRow = Row("Mode  (what to run)", 28)
+    local modeOptions = { "Seller", "Sniper", "Both" }
+    local modeIdx = 1
+    for i, v in ipairs(modeOptions) do if v == Cfg.Mode then modeIdx = i end end
+    local modeLabel = Label(modeRow, modeOptions[modeIdx], 12, C.Text, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+    modeLabel.Size = UDim2.new(0, 90, 0, 26)
+    modeLabel.Position = UDim2.new(1, -100, 0.5, -13)
+    modeLabel.BackgroundTransparency = 0
+    modeLabel.BackgroundColor3 = C.Accent
+    Corner(modeLabel, 6)
+    local mBtn2 = Instance.new("TextButton")
+    mBtn2.Size = UDim2.new(1, 0, 1, 0)
+    mBtn2.BackgroundTransparency = 1
+    mBtn2.Text = ""
+    mBtn2.Parent = modeLabel
     mBtn2.MouseButton1Click:Connect(function()
-        modeIdx=modeIdx%#modeOptions+1; modeLabel.Text=modeOptions[modeIdx]; Cfg.Mode=modeOptions[modeIdx]; SaveCfg()
+        modeIdx = modeIdx % #modeOptions + 1
+        modeLabel.Text = modeOptions[modeIdx]
+        Cfg.Mode = modeOptions[modeIdx]
+        SaveCfg()
     end)
 
-    -- Switch servers
-    local ssRow=Row("Switch Servers",74)
-    local _,getSS,onSS,setSS=Toggle(ssRow,UDim2.new(1,-56,0.5,-11),Cfg.SwitchServers or false)
+    local ssRow = Row("Switch Servers", 74)
+    local _, getSS, onSS, setSS = Toggle(ssRow, UDim2.new(1, -56, 0.5, -11), Cfg.SwitchServers or false)
     setSS(Cfg.SwitchServers or false)
-    onSS(function(v) Cfg.SwitchServers=v; SaveCfg() end)
+    onSS(function(v) Cfg.SwitchServers = v; SaveCfg() end)
 
-    -- Delay
-    local delRow=Row("Switch Delay  (minutes)",118)
-    local delIn=Input(delRow,"20",UDim2.new(0,80,0,24),UDim2.new(1,-90,0.5,-12))
-    delIn.Text=tostring(Cfg.Delay or 20)
-    delIn.FocusLost:Connect(function() Cfg.Delay=tonumber(delIn.Text) or 20; SaveCfg() end)
+    local delRow = Row("Switch Delay  (minutes)", 118)
+    local delIn = Input(delRow, "20", UDim2.new(0, 80, 0, 24), UDim2.new(1, -90, 0.5, -12))
+    delIn.Text = tostring(Cfg.Delay or 20)
+    delIn.FocusLost:Connect(function() Cfg.Delay = tonumber(delIn.Text) or 20; SaveCfg() end)
 
-    -- Only Pro
-    local proRow=Row("Only Pro Servers",162)
-    local _,getPro,onPro,setPro=Toggle(proRow,UDim2.new(1,-56,0.5,-11),Cfg.OnlyPro or false)
+    local proRow = Row("Only Pro Servers", 162)
+    local _, getPro, onPro, setPro = Toggle(proRow, UDim2.new(1, -56, 0.5, -11), Cfg.OnlyPro or false)
     setPro(Cfg.OnlyPro or false)
-    onPro(function(v) Cfg.OnlyPro=v; SaveCfg() end)
+    onPro(function(v) Cfg.OnlyPro = v; SaveCfg() end)
 
-    -- Webhook section
-    local wl=Instance.new("TextLabel"); wl.Text="WEBHOOK"; wl.TextSize=10; wl.Font=Enum.Font.GothamBold; wl.TextColor3=C.Sub; wl.BackgroundTransparency=1; wl.Position=UDim2.new(0,8,0,210); wl.Size=UDim2.new(1,0,0,16); wl.TextXAlignment=Enum.TextXAlignment.Left; wl.Parent=sf
+    local wl = Label(sf, "WEBHOOK", 10, C.Sub, Enum.Font.GothamBold)
+    wl.Position = UDim2.new(0, 8, 0, 210)
+    wl.Size = UDim2.new(1, 0, 0, 16)
 
-    local whRow=Frame(sf,UDim2.new(1,-16,0,38),UDim2.new(0,8,0,230),C.Card,8); Stroke(whRow,C.Border,1)
-    local whLabel=Instance.new("TextLabel"); whLabel.Text="Discord URL"; whLabel.TextSize=12; whLabel.Font=Enum.Font.GothamBold; whLabel.TextColor3=C.Text; whLabel.BackgroundTransparency=1; whLabel.Position=UDim2.new(0,12,0,0); whLabel.Size=UDim2.new(0,80,1,0); whLabel.TextXAlignment=Enum.TextXAlignment.Left; whLabel.Parent=whRow
-    local whIn=Input(whRow,"https://discord.com/api/webhooks/...",UDim2.new(1,-105,0,7),UDim2.new(0,95,0,7))
-    whIn.Text=Cfg.WebhookURL or ""
-    whIn.FocusLost:Connect(function() Cfg.WebhookURL=whIn.Text; SaveCfg() end)
+    local whRow = Frame(sf, UDim2.new(1, -16, 0, 38), UDim2.new(0, 8, 0, 230), C.Card, 8)
+    Stroke(whRow, C.Border, 1)
+    local whLabel = Label(whRow, "Discord URL", 12, C.Text, Enum.Font.GothamBold)
+    whLabel.Position = UDim2.new(0, 12, 0, 0)
+    whLabel.Size = UDim2.new(0, 80, 1, 0)
+    local whIn = Input(whRow, "https://discord.com/api/webhooks/...", UDim2.new(1, -105, 0, 24), UDim2.new(0, 95, 0.5, -12))
+    whIn.Text = Cfg.WebhookURL or ""
+    whIn.FocusLost:Connect(function() Cfg.WebhookURL = whIn.Text; SaveCfg() end)
 end
 
--- ══════════════════════════════════════════
---  BOTTOM BAR — Launch / Stop
--- ══════════════════════════════════════════
-local BBar=Frame(Win,UDim2.new(1,0,0,48),UDim2.new(0,0,1,-48),Color3.fromRGB(13,13,22),0)
-local launchBtn=Btn(BBar,"▶  START",UDim2.new(0,140,0,32),UDim2.new(0,12,0.5,-16),C.Green,Color3.fromRGB(5,30,18))
-launchBtn.TextColor3=Color3.fromRGB(5,40,22)
-local stopBtn=Btn(BBar,"■  STOP",UDim2.new(0,120,0,32),UDim2.new(0,160,0.5,-16),Color3.fromRGB(80,20,20),C.Red)
-local botStatus=Instance.new("TextLabel"); botStatus.Size=UDim2.new(1,-310,1,0); botStatus.Position=UDim2.new(0,295,0,0); botStatus.BackgroundTransparency=1; botStatus.TextColor3=C.Sub; botStatus.Font=Enum.Font.Gotham; botStatus.TextSize=11; botStatus.Text="Configure items, then press START"; botStatus.TextXAlignment=Enum.TextXAlignment.Left; botStatus.Parent=BBar
-
+local BBar = Frame(Win, UDim2.new(1, -190, 0, 48), UDim2.new(0, 190, 1, -48), C.Header, 0)
+local launchBtn = Btn(BBar, ">  START", UDim2.new(0, 140, 0, 32), UDim2.new(0, 12, 0.5, -16), C.Green, Color3.fromRGB(5, 30, 18))
+launchBtn.TextColor3 = Color3.fromRGB(5, 40, 22)
+local stopBtn = Btn(BBar, "[] STOP", UDim2.new(0, 120, 0, 32), UDim2.new(0, 160, 0.5, -16), Color3.fromRGB(80, 20, 20), C.Red)
+local botStatus = Label(BBar, "Configure items, then press START", 11, C.Sub, Enum.Font.Gotham)
+botStatus.Size = UDim2.new(1, -310, 1, 0)
+botStatus.Position = UDim2.new(0, 295, 0, 0)
 -- ══════════════════════════════════════════
 --  SELLER RUNTIME
 -- ══════════════════════════════════════════
